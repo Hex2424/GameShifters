@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, make_response, jsonify, render_template
+from flask import Flask, request, make_response, jsonify, render_template, redirect
 from decouple import config
 from steam import Steam
 from pysteamsignin.steamsignin import SteamSignIn
@@ -16,27 +16,24 @@ def main():
         return render_template('index.html')
 
     user = steam.users.get_user_details(steamID)['player']
-    owned_games = steam.users.get_owned_games(steamID)['games']
-    steam_level = steam.users.get_user_steam_level(steamID)
-    badges = steam.users.get_user_badges(steamID)
+    # owned_games = steam.users.get_owned_games(steamID)['games']
+    # steam_level = steam.users.get_user_steam_level(steamID)
+    # badges = steam.users.get_user_badges(steamID)
 
     return render_template(
-        'main.html',
+        'index_logged_in.html',
         username=user['personaname'],
         avatar=user['avatarfull'],
-        steam_level=steam_level['player_level'],
-        badges=badges,
-        owned_games=owned_games
     )
 
 @app.route('/login')
 def login():
     steamLogin = SteamSignIn()
-    return steamLogin.RedirectUser(steamLogin.ConstructURL('http://localhost:8080/processlogin'))
+    return steamLogin.RedirectUser(steamLogin.ConstructURL('http://localhost:80/processlogin'))
 
 @app.route('/logout')
 def logout():
-    response = make_response('Logged out successfully!')
+    response = make_response(redirect('/'))
     response.set_cookie('steam_id', '', expires=0)
     return response
 
@@ -47,9 +44,8 @@ def process():
     steamID = steamLogin.ValidateResults(returnData)
 
     if steamID is not False:
-        response = make_response('Logged in successfully!')
-        response.set_cookie('steam_id', steamID)
-        response.headers['Location'] = '/'
+        response = make_response(redirect('/'))
+        response.set_cookie('steam_id', steamID, secure=True)
         return response
     else:
         return 'Failed to log in, bad details?'
