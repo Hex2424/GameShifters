@@ -221,28 +221,29 @@ h1#logo a {
 	padding-bottom:11px;
 }
 .box .head h2 {
-	float:left;
+	float:left;	
 	display:inline;
 }
 .box .movie {
-	width:152px;
+	width:450px;
 	float:left;
 	padding-right:12px;
+	margin-bottom: 20px;
 }
 .movie-image {
 	float:left;
-	width:152px;
+	width:450px;
 	height:214px;
 	position:relative;
 }
 .movie-image img {
-	width:152px;
+	width:450px;
 	height:214px;
 }
 .movie-image a {
 	float:left;
 	display:inline;
-	width:152px;
+	width:450px;
 	height:214px;
 	position:relative;
 	z-index:2;
@@ -251,7 +252,7 @@ h1#logo a {
 	position:absolute;
 	top:0;
 	left:0;
-	width:152px;
+	width:450px;
 	height:214px;
 	background:url('images/image-hover.png');
 	display:block;
@@ -272,7 +273,7 @@ h1#logo a {
 }
 .rating {
 	float:left;
-	width:152px;
+	width:450px;
 	padding-top:8px;
 }
 .rating p {
@@ -289,7 +290,7 @@ h1#logo a {
 	margin-left:2px;
 }
 .rating .stars-in {
-	width:48px;
+	width:60px;
 	display:inline;
 	background:url('images/stars.gif') no-repeat 0 bottom;
 	position:absolute;

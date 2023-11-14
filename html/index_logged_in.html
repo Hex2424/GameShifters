@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>GameShifters</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-func.js"></script>
+<!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
+</head>
+<body>
+<!-- START PAGE SOURCE -->
+<div id="shell">
+  <div id="header">
+    <!-- <form class="header-form" action="#" method="post" id="loginForm">
+      <label for="username">Steam ID:</label>
+      <input type="text" name="username" id="username"/>
+
+      
+  </form> -->
+    <h1 id="logo"><a href="/">GameShifters</a></h1>
+    <div id="navigation">
+      <ul>
+        <li><a class="active" href="/">HOME</a></li>
+        <li><a href="#">NEW GAMES</a></li>
+        <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
+        <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
+        <!-- make icon smaller -->
+        <li><img src="{{ avatar }}" style="height: 50px;" alt="Avatar"></li>
+        <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+   
+    </div>
+    
+    <div id="sub-navigation">
+    
+    </div>
+  </div>
+  <div id="main">
+    <div id="content">
+      <div class="box">
+        <div class="head">
+          <h2>Recommended trade games</h2>
+          <p class="text-right"><a href="#">See all</a></p>
+        </div>
+        {% for game in recommended_games %}
+        <div class="movie">
+            <div class="movie-image">
+                <span class="play"><span class="name">{{ game.name }}</span></span>
+                <a href="{{ game.website }}"><img src="{{ game.img }}" alt="" /></a>
+            </div>
+            <div class="rating">
+                <p>RATING</p>
+                <p>&nbsp;{{ game.rating }}/10</p>
+                <span class="comments">{{ game.comments }}</span>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="cl">&nbsp;</div>
+      </div>
+      <div class="box">
+        <div class="head">
+          <h2>Top rated game trades</h2>
+          <p class="text-right"><a href="#">See all</a></p>
+        </div>
+        {% for game in top_games %}
+        <div class="movie">
+            <div class="movie-image">
+                <span class="play"><span class="name">{{ game.name }}</span></span>
+                <a href="{{ game.website }}"><img src="{{ game.img }}" alt="" /></a>
+            </div>
+            <div class="rating">
+                <p>RATING</p>
+                <p>&nbsp;{{ game.rating }}/10</p>
+                <span class="comments">{{ game.comments }}</span>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="cl">&nbsp;</div>
+      </div>
+    </div>   
+    <div class="cl">&nbsp;</div>
+  </div>
+  <div id="footer">
+    <p class="lf">Copyright &copy; 2023 <a href="#">GameShifters</a> - All Rights Reserved</p>
+    <div style="clear:both;"></div>
+  </div>
+</div>
+<!-- END PAGE SOURCE -->
+<!-- Add this div for the login popup -->
+</body>
+</html>
