@@ -6,8 +6,7 @@ from pysteamsignin.steamsignin import SteamSignIn
 
 app = Flask(__name__, template_folder='html', static_folder='css')
 
-# KEY = config("STEAM_API_KEY")
-KEY = ""
+KEY = config("STEAM_API_KEY")
 steam = Steam(KEY)
 
 @app.route('/')
