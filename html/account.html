@@ -25,7 +25,9 @@
         <li><a href="#">NEW GAMES</a></li>
         <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
         <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
-        <li><a class="button-18" type="submit" href="{{ url_for('login') }}">LOGIN WITH STEAM</a></li>
+        <!-- make icon smaller -->
+        <li><img src="{{ avatar }}" style="height: 50px;" alt="Avatar"></li>
+        <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
    
     </div>

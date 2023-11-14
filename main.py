@@ -66,18 +66,58 @@ def logout():
     response.set_cookie('steam_id', '', expires=0)
     return response
 
+def update_user_data(steamID):
+    user_data = database.users.find_one({'steam_id': steamID})
+
+    user = steam.users.get_user_details(steamID)['player']
+    steam_level = steam.users.get_user_steam_level(steamID)
+    owned_games = steam.users.get_owned_games(steamID)['games']
+
+    games = []
+    for owned_game in owned_games:
+        app_id = owned_game['appid']
+
+        game_data = requests.get(f'https://store.steampowered.com/api/appdetails?appids={app_id}&lang=en').json()[str(app_id)]['data']
+        game = {
+            'name': game_data['name'],
+            'img': game_data['header_image'],
+            'website': f'https://store.steampowered.com/agecheck/app/{app_id}/'
+        }
+        games.append(game)
+    
+    if user_data is None:
+        database.users.insert_one({
+            'steam_id': steamID,
+            'username': user['personaname'],
+            'avatar': user['avatarfull'],
+            'steam_level': steam_level['player_level'],
+            'games': games
+        })
+    else:
+        database.users.update_one(
+            {'steam_id': steamID},
+            {'$set': {
+                'username': user['personaname'],
+                'avatar': user['avatarfull'],
+                'steam_level': steam_level['player_level'],
+                'games': games
+            }}
+        )
+
 @app.route('/processlogin')
 def process():
     returnData = request.values
     steamLogin = SteamSignIn()
     steamID = steamLogin.ValidateResults(returnData)
 
-    if steamID is not False:
-        response = make_response(redirect('/'))
-        response.set_cookie('steam_id', steamID, secure=True)
-        return response
-    else:
-        return 'Failed to log in, bad details?'
+    if not steamID:
+        return 'Failed to log in'
+    
+    update_user_data(steamID)
+
+    response = make_response(redirect('/'))
+    response.set_cookie('steam_id', steamID, secure=True)
+    return response
 
 @app.route('/search')
 def search():
@@ -103,28 +143,14 @@ def my_account():
     steamID = request.cookies.get('steam_id')
 
     if steamID is not None:
-        user = steam.users.get_user_details(steamID)['player']
-        owned_games = steam.users.get_owned_games(steamID)['games']
-        steam_level = steam.users.get_user_steam_level(steamID)
-
-        games = []
-        for owned_game in owned_games:
-            app_id = owned_game['appid']
-
-            game_data = requests.get(f'https://store.steampowered.com/api/appdetails?appids={app_id}&lang=en').json()[str(app_id)]['data']
-            game = {
-                'name': game_data['name'],
-                'img': game_data['header_image'],
-                'website': f'https://store.steampowered.com/agecheck/app/{app_id}/'
-            }
-            games.append(game)
+        user_data = database.users.find_one({'steam_id': steamID})
 
         return render_template(
             'account.html',
-            username=user['personaname'],
-            avatar=user['avatarfull'],
-            steam_level=steam_level['player_level'],
-            games=games,
+            username=user_data['username'],
+            avatar=user_data['avatar'],
+            steam_level=user_data['steam_level'],
+            games=user_data['games'],
         )
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@
 <title>GameShifters</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
+<script src="https://kit.fontawesome.com/dacf57c9a7.js" crossorigin="anonymous"></script>
 <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 <script type="text/javascript" src="js/jquery-func.js"></script>
 <!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
@@ -34,8 +35,11 @@
     </div>
   </div>
   <div id="main">
-    <div id="content">
-      <h1>PLEASE LOGIN FIRST</h1>
+    <div id="content" style="margin-top: 100px; margin-bottom: 621px; text-align: center;">
+      <h1 style="margin-bottom: 50px;">LOGIN WITH STEAM TO START USING <b>GAMESHIFTERS</b></h1>
+      <a href="{{ url_for('login') }}" class="steambutton" style="margin-left: 333px; margin-bottom: 200px;"><span>Login With Steam</span><div class="icon">
+        <i class="fa fa-steam-square"></i>
+      </div></a>
     </div>   
     <div class="cl">&nbsp;</div>
   </div>
