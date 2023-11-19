@@ -77,7 +77,11 @@ def update_user_data(steamID):
     for owned_game in owned_games:
         app_id = owned_game['appid']
 
-        game_data = requests.get(f'https://store.steampowered.com/api/appdetails?appids={app_id}&lang=en').json()[str(app_id)]['data']
+        try:
+            game_data = requests.get(f'https://store.steampowered.com/api/appdetails?appids={app_id}&lang=en').json()[str(app_id)]['data']
+        except:
+            continue
+
         game = {
             'name': game_data['name'],
             'img': game_data['header_image'],
