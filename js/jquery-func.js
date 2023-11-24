@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	
-	$(".movie-image").hover(function(){
+	$(".game-image").hover(function(){
 		$(this).find(".play").show();
 
 	},

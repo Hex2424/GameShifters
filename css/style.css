@@ -53,7 +53,7 @@ textarea {
 	text-align:right;
 }
 h2 {
-	font-size:10px;
+	font-size:15px;
 	color:#f2a223;
 	font-weight:bold;
 }
@@ -219,28 +219,29 @@ h1#logo a {
 	width:980px;
 	padding-top:14px;
 	padding-bottom:11px;
+	margin-bottom: 20px;
 }
 .box .head h2 {
 	float:left;	
 	display:inline;
 }
-.box .movie {
+.box .game {
 	width:450px;
 	float:left;
 	padding-right:12px;
 	margin-bottom: 20px;
 }
-.movie-image {
+.game-image {
 	float:left;
 	width:450px;
 	height:214px;
 	position:relative;
 }
-.movie-image img {
+.game-image img {
 	width:450px;
 	height:214px;
 }
-.movie-image a {
+.game-image a {
 	float:left;
 	display:inline;
 	width:450px;
@@ -254,13 +255,33 @@ h1#logo a {
 	left:0;
 	width:450px;
 	height:214px;
-	background:url('images/image-hover.png');
+	/* background-color: #000; */
+	opacity: 0;
 	display:block;
 	z-index:5;
 	cursor:pointer;
 	display:none;
 }
-.movie span.name {
+.game {
+	--c: #1a90ff; /* the border color */
+	--b: 5px;    /* the border thickness*/
+	--g: 5px;     /* the gap on hover */
+	
+	padding: calc(var(--g) + var(--b));
+	--_g: #0000 25%,var(--c) 0;
+	background: 
+	  conic-gradient(from 180deg at top    var(--b) right var(--b),var(--_g))
+	   var(--_i,200%) 0  /200% var(--_i,var(--b))  no-repeat,
+	  conic-gradient(            at bottom var(--b) left  var(--b),var(--_g))
+	   0   var(--_i,200%)/var(--_i,var(--b)) 200%  no-repeat;
+	transition: .2s, background-position .2s .2s;
+	cursor: pointer;
+}
+.game:hover {
+	--_i: 100%;
+	transition: .2s, background-size .2s .2s;
+}
+.game span.name {
 	font-weight:bold;
 	color:#fff;
 	font-size:14px;
@@ -299,10 +320,13 @@ h1#logo a {
 	line-height:0;
 	text-indent:-4000px;
 }
-.comments {
-	background:url('images/comments.gif') no-repeat 0 center;
+.trades {
+	background:url('images/trades.gif') no-repeat 0 center;
 	padding-left:12px;
 	float:right;
+}
+.trades i {
+	margin-right: 5px;
 }
 #news {
 	width:460px;
@@ -312,6 +336,7 @@ h1#logo a {
 	width:460px;
 	padding-top:11px;
 	padding-bottom:14px;
+	margin-bottom: 20px;
 }
 #news h3, #coming h3 {
 	float:left;
@@ -325,6 +350,7 @@ h1#logo a {
 	width:490px;
 	padding-top:11px;
 	padding-bottom:14px;
+	margin-bottom: 20px;
 }
 #coming .head strong {
 	color:#1a90ff;
@@ -527,3 +553,154 @@ h1#logo a {
   .steambutton:hover .icon .fa {
 	font-size: 45px;
   }
+
+  .user-info {
+    text-align: center;
+}
+
+.user-info h1 {
+    margin: 10px 0;
+    font-size: 2em;
+	color: #f2a223;
+}
+
+.user-info .account-level {
+	margin: 0;
+	font-size: 1.2em;
+	color: #1a90ff;
+}
+
+.user-info img {
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #777;
+}
+
+:root {
+	--rating-size: 7rem;
+	--bar-size: 1rem;
+	--background-color: #e7f2fa;
+	--rating-color-default: #2980b9;
+	--rating-color-background: #c7e1f3;
+	--rating-color-good: #27ae60;
+	--rating-color-meh: #f1c40f;
+	--rating-color-bad: #e74c3c;
+  }
+  
+  /* Rating item */
+  .user-rating {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 100%;
+	overflow: hidden;
+	
+	
+	background: var(--rating-color-default);
+	color: var(--rating-color-default);
+	width: var(--rating-size);
+	height: var(--rating-size);
+  
+	/* Basic style for the text */
+	font-size: calc(var(--rating-size) / 3);
+	line-height: 1;
+  }
+  
+  /* Rating circle content */
+  .user-rating span {
+	position: relative;
+	display: flex;
+	font-weight: bold;
+	z-index: 2;
+  }
+  
+  .user-rating span small {
+	font-size: 0.5em;
+	font-weight: 900;
+	align-self: center;
+  }
+  
+  /* Bar mask, creates an inner circle with the same color as thee background */
+  .user-rating::after {
+	content: "";
+	position: absolute;
+	inset: var(--bar-size);
+	background: var(--background-color);
+	border-radius: inherit;
+	z-index: 1;
+  }
+  
+  /* Bar background */
+  .user-rating::before {
+	content: "";
+	position: absolute;
+	inset: var(--bar-size);
+	border-radius: inherit;
+	box-shadow: 0 0 0 1rem var(--rating-color-background);
+	z-index: -1;
+  }
+  
+  /* Classes to give different colors to ratings, based on their score */
+  .user-rating.good {
+	background: var(--rating-color-good);
+	color: var(--rating-color-good);
+  }
+  
+  .user-rating.meh {
+	background: var(--rating-color-meh);
+	color: var(--rating-color-meh);
+  }
+  
+  .user-rating.bad {
+	background: var(--rating-color-bad);
+	color: var(--rating-color-bad);
+  }
+
+.user-score {
+    margin-top: 20px;
+}
+
+.score {
+    display: inline-block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-right: 20px; /* Adjust the right margin as needed */
+}
+
+.comments {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+}
+
+.comment {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.comment p {
+    margin: 0;
+}
+
+.commenter-name {
+    font-weight: bold;
+    margin-right: 5px;
+	color: #1a90ff;
+}
+
+.comment-content {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+/* Optional: Style the date for better visibility */
+.comment p:last-child {
+    color: #777;
+}

@@ -47,15 +47,15 @@
           <p class="text-right"><a href="#">See all</a></p>
         </div>
         {% for game in games %}
-        <div class="movie">
-            <div class="movie-image">
+        <div class="game">
+            <div class="game-image">
                 <span class="play"><span class="name">{{ game.name }}</span></span>
                 <a href="{{ game.website }}"><img src="{{ game.img }}" alt="" /></a>
             </div>
             <!-- <div class="rating">
                 <p>RATING</p>
                 <p>&nbsp;{{ game.rating }}/10</p>
-                <span class="comments">{{ game.comments }}</span>
+                <span class="trades">{{ game.trades }}</span>
             </div> -->
         </div>
         {% endfor %}

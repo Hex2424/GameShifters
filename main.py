@@ -66,6 +66,42 @@ def logout():
     response.set_cookie('steam_id', '', expires=0)
     return response
 
+def get_app_data(app_id):
+    try:
+        app = database.apps.find_one({'app_id': app_id})
+        if app:
+            return app
+
+        app_data = None
+        app_data_response = requests.get(f'http://store.steampowered.com/api/appdetails?appids={app_id}').json()
+
+        if app_data_response[str(app_id)]['success']:
+            app_data = app_data_response[str(app_id)]['data']
+
+        app_data = {
+            'app_id': app_id,
+            'name': app_data['name'],
+            'required_age': app_data['required_age'],
+            'short_description': app_data['short_description'],
+            'detailed_description': app_data['detailed_description'],
+            'header_image': app_data['header_image'],
+            'video': app_data['games'][0]['webm']['480'],
+            'website': app_data['website'],
+            'pc_requirements': app_data['pc_requirements'],
+            'developers': app_data['developers'],
+            'metacritic': app_data['metacritic'],
+            'genres': app_data['genres'],
+            'release_date': app_data['release_date']['date'],
+            'background': app_data['background'],
+            'notes': app_data['notes'],
+            'offers': 0,
+        }
+        database.apps.insert_one(app_data)
+        return app_data
+    except Exception as e:
+        print(e)
+        return None
+
 def update_user_data(steamID):
     user_data = database.users.find_one({'steam_id': steamID})
 
@@ -116,7 +152,8 @@ def process():
 
     if not steamID:
         return 'Failed to log in'
-    
+
+    # TODO: Run in subprocess
     update_user_data(steamID)
 
     response = make_response(redirect('/'))
