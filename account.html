@@ -27,7 +27,7 @@
         <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
         <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
         <!-- make icon smaller -->
-        <li><img src="{{ avatar }}" style="height: 50px;" alt="Avatar"></li>
+        <li><img class="avatar" src="https://avatars.steamstatic.com/4f61a1251a9538dde719f5c6af1ad1fbc336f6be_full.jpg" style="height: 50px;" alt="Avatar"></li>
         <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
    
@@ -51,66 +51,165 @@
           <img src="https://avatars.steamstatic.com/4f61a1251a9538dde719f5c6af1ad1fbc336f6be_full.jpg" alt="Avatar">
           <p>Steam Level: <span class="account-level">44</span></p>
         </div>
-        <div class="user-score">
-          <div class="score">
-            Total rating<br></br>
-            <div class="user-rating">99%</div>
-          </div>
-            <div class="comments">
-              <h1 style="margin-bottom: 15px">Comments</h1>
-              <div class="comment">
-                <p><span class="commenter-name">John Doe</span></p> 
-                <p class="comment-content">Great trader, would trade again</p>
-                <p>2021-10-10</p>
-            </div>
-            <div class="comment">
-              <p><span class="commenter-name">John Doe</span></p> 
-              <p class="comment-content">Great trader, would trade again</p>
-              <p>2021-10-10</p>
-          </div>
-        </div>
 
-        <div class="head">
-          <h2>Owned games</h2>
-        </div>
-
-        <div class="game">
-            <div class="game-image">
-                <span class="play"><span class="name">Grand Theft Auto V</span></span>
-                <a href="https://store.steampowered.com/agecheck/app/271590/"><img src="https://cdn.akamai.steamstatic.com/steam/apps/271590/header.jpg?t=1695060909" alt="" /></a>
-            </div>
-            <div class="rating">
-                <p>RATING</p>
-                <p>&nbsp;8.62/10</p>
-                <span class="trades"><i class="fa-solid fa-right-left"></i>4</span>
-            </div>
-        </div>
-        <div class="game">
-            <div class="game-image">
-                <span class="play"><span class="name">ELDEN RING</span></span>
-                <a href="https://store.steampowered.com/agecheck/app/1245620/"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg?t=1683618443" alt="" /></a>
-            </div>
-            <div class="rating">
-                <p>RATING</p>
-                <p>&nbsp;9.22/10</p>
-                <span class="trades"><i class="fa-solid fa-right-left"></i>2</span>
-            </div>
-        </div>
-        <div class="game">
-          <div class="game-image">
-              <span class="play"><span class="name">ELDEN RING</span></span>
-              <a href="https://store.steampowered.com/agecheck/app/1245620/"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg?t=1683618443" alt="" /></a>
-          </div>
-          <div class="rating">
-              <p>RATING</p>
-              <p>&nbsp;9.22/10</p>
-              <span class="trades"><i class="fa-solid fa-right-left"></i>2</span>
-          </div>
-        </div>
         
+        <div class="tabs">
+          <div class="tab-2">
+            <label for="tab2-1">Rating</label>
+            <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+            <div>
+              <div class="user-score">
+                <div class="score">
+                  <span class="rating-heading">User Rating</span>
+                  <span class="fa fa-star checked"></span>
+                  <span class="fa fa-star checked"></span>
+                  <span class="fa fa-star checked"></span>
+                  <span class="fa fa-star checked"></span>
+                  <span class="fa fa-star"></span>
+                  <p>4.1 average based on 254 reviews.</p>
+        
+                  <!-- 5 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>5 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-5" style="width: 34%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>150</div>
+                    </div>
+                  </div>
+        
+                  <!-- 4 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>4 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-4" style="width: 34%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>150</div>
+                    </div>
+                  </div>
+        
+                  <!-- 3 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>3 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-3" style="width: 34%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>150</div>
+                    </div>
+                  </div>
+        
+                  <!-- 2 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>2 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-2" style="width: 34%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>150</div>
+                    </div>
+                  </div>
+        
+                  <!-- 1 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>1 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-1" style="width: 34%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>150</div>
+                    </div>
+                  </div>
+              
+                </div>
+                  <div class="comments">
+                    <h1 style="margin-bottom: 15px">Comments</h1>
+                    <div class="comment">
+                      <p><span class="commenter-name">John Doe</span></p> 
+                      <p class="comment-content">Great trader, would trade again</p>
+                      <p>2021-10-10</p>
+                  </div>
+                  <div class="comment">
+                    <p><span class="commenter-name">John Doe</span></p> 
+                    <p class="comment-content">Great trader, would trade again</p>
+                    <p>2021-10-10</p>
+                </div>
+              </div>
+        </div></div>
+          </div>
+          <div class="tab-2">
+            <label for="tab2-2">Owned games</label>
+            <input id="tab2-2" name="tabs-two" type="radio">
+            <div>
+              <div class="owned-games">
+        
+                <div class="game">
+                    <div class="game-image">
+                        <span class="play"><span class="name">Grand Theft Auto V</span></span>
+                        <a href="https://store.steampowered.com/agecheck/app/271590/"><img src="https://cdn.akamai.steamstatic.com/steam/apps/271590/header.jpg?t=1695060909" alt="" /></a>
+                    </div>
+                    <div class="rating">
+                        <p>RATING</p>
+                        <p>&nbsp;8.62/10</p>
+                        <span class="trades"><i class="fa-solid fa-right-left"></i>4</span>
+                    </div>
+                </div>
+                <div class="game">
+                    <div class="game-image">
+                        <span class="play"><span class="name">ELDEN RING</span></span>
+                        <a href="https://store.steampowered.com/agecheck/app/1245620/"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg?t=1683618443" alt="" /></a>
+                    </div>
+                    <div class="rating">
+                        <p>RATING</p>
+                        <p>&nbsp;9.22/10</p>
+                        <span class="trades"><i class="fa-solid fa-right-left"></i>2</span>
+                    </div>
+                </div>
+                <div class="game">
+                  <div class="game-image">
+                      <span class="play"><span class="name">ELDEN RING</span></span>
+                      <a href="https://store.steampowered.com/agecheck/app/1245620/"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg?t=1683618443" alt="" /></a>
+                  </div>
+                  <div class="rating">
+                      <p>RATING</p>
+                      <p>&nbsp;9.22/10</p>
+                      <span class="trades"><i class="fa-solid fa-right-left"></i>2</span>
+                  </div>
+                </div>
+              </div>
+        </div>
+          </div>
+        </div>
+
+          
 
         <div class="cl">&nbsp;</div>
       </div>
+      
+
+
     </div>   
     <div class="cl">&nbsp;</div>
   </div>
@@ -159,4 +258,5 @@ ratings.forEach((rating) => {
 });
 
 </script>
+  
 </html>
