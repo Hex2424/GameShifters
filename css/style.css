@@ -133,8 +133,7 @@ h1#logo a {
 	float:right;
 	clear:right;
 	padding-top:28px;
-	padding-bottom:47px;
-}
+	padding-bottom: 20px;}
 #navigation ul {
 	list-style:none;
 }
@@ -142,6 +141,7 @@ h1#logo a {
 	float:left;
 	display:inline;
 	padding-left:29px;
+	margin-top: 30px;
 }
 #navigation ul li a {
 	font-size:14px;
@@ -858,4 +858,41 @@ h1#logo a {
 		vertical-align: middle;
 		width: 50px;
 		border-radius: 30px;
+		margin-top: -14px;
+	  }
+	  
+
+	  .search-bar {
+		display: flex;
+		align-items: center;
+		margin: 10px;
+	  }
+	
+	  #searchForm {
+		display: flex;
+		width: 40%;
+		margin-left: auto;
+	  }
+	
+	  #searchInput {
+		flex: 1;
+		padding: 8px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		font-size: 16px;
+	  }
+	
+	  #searchButton {
+		padding: 8px 16px;
+		background-color: #1a90ff;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 16px;
+		margin-left: 5px;
+	  }
+	
+	  #searchButton:hover {
+		background-color: #0A66C2;
 	  }

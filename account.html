@@ -27,17 +27,18 @@
         <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
         <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
         <!-- make icon smaller -->
-        <li><img class="avatar" src="https://avatars.steamstatic.com/4f61a1251a9538dde719f5c6af1ad1fbc336f6be_full.jpg" style="height: 50px;" alt="Avatar"></li>
+        <li><img class="avatar" src="https://avatars.steamstatic.com/4f61a1251a9538dde719f5c6af1ad1fbc336f6be_full.jpg" alt="Avatar"></li>
         <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
    
     </div>
     
     <div id="sub-navigation"></div>
+
     <div class="search-bar">
       <form action="#" method="get" id="searchForm">
         <input type="text" name="search" id="searchInput" placeholder="Search...">
-        <button type="submit" id="searchButton">Search</button>
+        <button type="submit" id="searchButton"><i class="fa fa-search" aria-hidden="true"></i></button>
       </form>
     </div>
   
@@ -258,5 +259,17 @@ ratings.forEach((rating) => {
 });
 
 </script>
-  
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission
+      
+      // Get the search input value
+      var searchValue = document.getElementById('searchInput').value;
+
+      // Redirect to the search URL with the query parameter
+      window.location.href = '/search?q=' + encodeURIComponent(searchValue);
+    });
+  });
+</script>
 </html>

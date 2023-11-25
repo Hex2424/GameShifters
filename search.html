@@ -97,5 +97,18 @@
 </div>
 <!-- END PAGE SOURCE -->
 <!-- Add this div for the login popup -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission
+      
+      // Get the search input value
+      var searchValue = document.getElementById('searchInput').value;
+
+      // Redirect to the search URL with the query parameter
+      window.location.href = '/search?q=' + encodeURIComponent(searchValue);
+    });
+  });
+</script>
 </body>
 </html>
