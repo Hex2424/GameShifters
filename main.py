@@ -6,6 +6,8 @@ from pysteamsignin.steamsignin import SteamSignIn
 import requests
 from multiprocessing import Pool
 import pymongo
+from concurrent.futures import ThreadPoolExecutor
+
 
 app = Flask(__name__, template_folder='html', static_folder='css')
 
@@ -162,10 +164,25 @@ def process():
 def search():
     query = request.args.get('q')
     if query is None:
-        return 'No query provided'
-    else:
-        res = steam.apps.search_games(query)
-        return 'Found {0} results for {1}'.format(len(res), query)
+        query = ''
+
+    res = steam.apps.search_games(query)['apps']
+    ids = [r['id'] for r in res]
+
+    games = []
+    with ThreadPoolExecutor() as executor:
+        # Use executor.map to parallelize the get_app_data calls
+        game_data_list = list(executor.map(get_app_data, ids))
+
+    for game_data in game_data_list:
+        if game_data:
+            games.append(game_data)
+
+    return render_template(
+        'search.html',
+        query=query,
+        games=games,
+    )
 
 @app.route('/get_owned_games')
 def get_owned_games():

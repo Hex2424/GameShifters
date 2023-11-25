@@ -36,7 +36,7 @@
     <div id="sub-navigation"></div>
     <div class="search-bar">
       <form action="#" method="get" id="searchForm">
-        <input type="text" name="search" id="searchInput" value="{{ search_query }}" placeholder="Search...">
+        <input type="text" name="search" id="searchInput" value="{{ query }}" placeholder="Search...">
         <button type="submit" id="searchButton">Search</button>
       </form>
     </div>
@@ -47,19 +47,19 @@
     <div id="content">
       <div class="box">
         <div class="head">
-          <h2>Search results for <i>{{ search_query }}</i></h2>
+          <h2>Search results for <i>{{ query }}</i></h2>
         </div>
 
         {% for game in games %}
           <div class="game">
               <div class="game-image">
                   <span class="play"><span class="name">{{ game.name }}</span></span>
-                  <a href="{{ game.website }}"><img src="{{ game.img }}" alt="" /></a>
+                  <a href="{{ game.website }}"><img src="{{ game.header_image }}" alt="" /></a>
               </div>
               <div class="rating">
                   <p>RATING</p>
                   <p>&nbsp;{{ game.rating }}/10</p>
-                  <span class="trades"><i class="fa-solid fa-right-left"></i>{{ game.trades }}</span>
+                  <span class="trades"><i class="fa-solid fa-right-left"></i>{{ game.offers }}</span>
               </div>
           </div>
           {% endfor %}
