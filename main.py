@@ -15,43 +15,41 @@ steam = Steam(KEY)
 mongodb = pymongo.MongoClient(config("MONGO_URI"))
 database = mongodb.game_shifters
 
+def run_in_subprocess(func, process_count=8):
+    with Pool(process_count) as pool:
+        pool.map(func, range(process_count))
+
+def update_top_games():
+    recommended_games = []
+    recommended_games_json = requests.get('https://steamspy.com/api.php?request=top100in2weeks').json()
+    game_ids = list(recommended_games_json.keys())
+
+    for game_id in game_ids[:26]:
+        game_data = get_app_data(game_id)
+        if game_data:
+            recommended_games.append(game_data)
+
+    database.top_games.drop()
+    database.top_games.insert_many(recommended_games)
+
 @app.route('/')
 def main():
     steamID = request.cookies.get('steam_id')
 
-    # recommended_games = []
-    # recommended_games_json = requests.get('https://steamspy.com/api.php?request=top100in2weeks').json()
-    # game_ids = list(recommended_games_json.keys())
-    # games_data = list(recommended_games_json.values())
-
-    # for game_id, data in zip(game_ids[:25], games_data[:25]):
-    #     game_data = requests.get(f'https://store.steampowered.com/api/appdetails?appids={game_id}&lang=en').json()[game_id]['data']
-
-    #     score = data['positive'] / (data['positive'] + data['negative']) * 10
-    #     game = {
-    #         'name': game_data['name'],
-    #         'img': game_data['header_image'],
-    #         'rating': score.__round__(2),
-    #         'website': f'https://store.steampowered.com/agecheck/app/{game_id}/'
-    #     }
-    #     recommended_games.append(game)
-
-    recommended_games = list(database.top_games.find({}))
-    top_games = recommended_games
 
     if not steamID:
-        return render_template(
-            'index.html',
-            recommended_games=recommended_games,
-            top_games=top_games,
-        )
+        return render_template('index.html')
+
+    # TODO: Run periodically
+    update_top_games()
+
+    top_games = list(database.top_games.find({}))
 
     user = steam.users.get_user_details(steamID)['player']
     return render_template(
         'index_logged_in.html',
         username=user['personaname'],
         avatar=user['avatarfull'],
-        recommended_games=recommended_games,
         top_games=top_games
     )
 
@@ -71,6 +69,9 @@ def get_app_data(app_id):
         app = database.apps.find_one({'app_id': app_id})
         if app:
             return app
+        
+        steamspy_data = requests.get(f'https://steamspy.com/api.php?request=appdetails&appid={app_id}').json()
+        score = steamspy_data['positive'] / (steamspy_data['positive'] + steamspy_data['negative']) * 10
 
         app_data = None
         app_data_response = requests.get(f'http://store.steampowered.com/api/appdetails?appids={app_id}').json()
@@ -80,20 +81,21 @@ def get_app_data(app_id):
 
         app_data = {
             'app_id': app_id,
-            'name': app_data['name'],
-            'required_age': app_data['required_age'],
-            'short_description': app_data['short_description'],
-            'detailed_description': app_data['detailed_description'],
-            'header_image': app_data['header_image'],
-            'video': app_data['games'][0]['webm']['480'],
-            'website': app_data['website'],
-            'pc_requirements': app_data['pc_requirements'],
-            'developers': app_data['developers'],
-            'metacritic': app_data['metacritic'],
-            'genres': app_data['genres'],
-            'release_date': app_data['release_date']['date'],
-            'background': app_data['background'],
-            'notes': app_data['notes'],
+            'name': app_data.get('name', None),
+            'rating': round(score, 2),
+            'required_age': app_data.get('required_age', None),
+            'short_description': app_data.get('short_description', None),
+            'detailed_description': app_data.get('detailed_description', None),
+            'header_image': app_data.get('header_image', None),
+            'video': app_data.get('games', [{}])[0].get('webm', {}).get('480', None),
+            'website': app_data.get('website', None),
+            'pc_requirements': app_data.get('pc_requirements', None),
+            'developers': app_data.get('developers', None),
+            'metacritic': app_data.get('metacritic', None),
+            'genres': app_data.get('genres', None),
+            'release_date': app_data.get('release_date', {}).get('date', None),
+            'background': app_data.get('background', None),
+            'notes': app_data.get('notes', None),
             'offers': 0,
         }
         database.apps.insert_one(app_data)
@@ -113,17 +115,9 @@ def update_user_data(steamID):
     for owned_game in owned_games:
         app_id = owned_game['appid']
 
-        try:
-            game_data = requests.get(f'https://store.steampowered.com/api/appdetails?appids={app_id}&lang=en').json()[str(app_id)]['data']
-        except:
-            continue
-
-        game = {
-            'name': game_data['name'],
-            'img': game_data['header_image'],
-            'website': f'https://store.steampowered.com/agecheck/app/{app_id}/'
-        }
-        games.append(game)
+        game_data = get_app_data(app_id)
+        if game_data:
+            games.append(game_data)
     
     if user_data is None:
         database.users.insert_one({
@@ -131,6 +125,10 @@ def update_user_data(steamID):
             'username': user['personaname'],
             'avatar': user['avatarfull'],
             'steam_level': steam_level['player_level'],
+            'total_rating': 0,
+            'rating_count': 0,
+            'star_ratings': [0, 0, 0, 0, 0],
+            'comments': [],
             'games': games
         })
     else:
@@ -186,12 +184,20 @@ def my_account():
     if steamID is not None:
         user_data = database.users.find_one({'steam_id': steamID})
 
+        average_rating = round(user_data['total_rating'] / user_data['rating_count'], 2) if user_data['rating_count'] > 0 else 0
+
         return render_template(
             'account.html',
             username=user_data['username'],
             avatar=user_data['avatar'],
             steam_level=user_data['steam_level'],
             games=user_data['games'],
+            ratings=user_data['star_ratings'],
+            total_rating=user_data['total_rating'],
+            rating_count=user_data['rating_count'],
+            average_rating=average_rating,
+            stars_count=round(average_rating),
+            comments=user_data['comments']
         )
 
 if __name__ == '__main__':

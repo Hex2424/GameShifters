@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
 <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 <script type="text/javascript" src="js/jquery-func.js"></script>
+<script src="https://kit.fontawesome.com/e1977a1fe2.js" crossorigin="anonymous"></script>
 <!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
 </head>
 <body>
@@ -26,56 +27,45 @@
         <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
         <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
         <!-- make icon smaller -->
-        <li><img src="{{ avatar }}" style="height: 50px;" alt="Avatar"></li>
+        <li><img class="avatar" src="{{ avatar }}" alt="Avatar"></li>
         <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
    
     </div>
     
-    <div id="sub-navigation">
-    
+    <div id="sub-navigation"></div>
+
+    <div class="search-bar">
+      <form action="#" method="get" id="searchForm">
+        <input type="text" name="search" id="searchInput" placeholder="Search...">
+        <button type="submit" id="searchButton"><i class="fa fa-search" aria-hidden="true"></i></button>
+      </form>
     </div>
+  
+    
   </div>
   <div id="main">
     <div id="content">
       <div class="box">
         <div class="head">
-          <h2>Recommended trade games</h2>
+          <h2>Top games</h2>
           <p class="text-right"><a href="#">See all</a></p>
         </div>
-        {% for game in recommended_games %}
-        <div class="game">
-            <div class="game-image">
-                <span class="play"><span class="name">{{ game.name }}</span></span>
-                <a href="{{ game.website }}"><img src="{{ game.img }}" alt="" /></a>
-            </div>
-            <div class="rating">
-                <p>RATING</p>
-                <p>&nbsp;{{ game.rating }}/10</p>
-                <span class="trades">{{ game.trades }}</span>
-            </div>
-        </div>
-        {% endfor %}
-        <div class="cl">&nbsp;</div>
-      </div>
-      <div class="box">
-        <div class="head">
-          <h2>Top rated game trades</h2>
-          <p class="text-right"><a href="#">See all</a></p>
-        </div>
+
         {% for game in top_games %}
         <div class="game">
-            <div class="game-image">
-                <span class="play"><span class="name">{{ game.name }}</span></span>
-                <a href="{{ game.website }}"><img src="{{ game.img }}" alt="" /></a>
-            </div>
-            <div class="rating">
-                <p>RATING</p>
-                <p>&nbsp;{{ game.rating }}/10</p>
-                <span class="trades">{{ game.trades }}</span>
-            </div>
-        </div>
+          <div class="game-image">
+              <span class="play"><span class="name">{{ game.name }}</span></span>
+              <a href="{{ game.website }}"><img src="{{ game.header_image }}" alt="" /></a>
+          </div>
+          <div class="rating">
+              <p>RATING</p>
+              <p>&nbsp;{{ game.rating }}/10</p>
+              <span class="trades"><i class="fa-solid fa-right-left"></i>{{ game.offers }}</span>
+          </div>
+      </div>
         {% endfor %}
+        
 
         <div class="cl">&nbsp;</div>
       </div>
@@ -83,10 +73,23 @@
     <div class="cl">&nbsp;</div>
   </div>
   <div id="footer">
-    <p class="lf">Copyright &copy; 2023 <a href="#">GameShifters</a> - All Rights Reserved</p>
+    <p class="lf">Copyright &copy; 2023 <a href="/">GameShifters</a> - All Rights Reserved</p>
     <div style="clear:both;"></div>
   </div>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission
+      
+      // Get the search input value
+      var searchValue = document.getElementById('searchInput').value;
+
+      // Redirect to the search URL with the query parameter
+      window.location.href = '/search?q=' + encodeURIComponent(searchValue);
+    });
+  });
+</script>
 <!-- END PAGE SOURCE -->
 <!-- Add this div for the login popup -->
 </body>
