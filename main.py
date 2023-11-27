@@ -171,6 +171,7 @@ def search():
     if query is None:
         query = ''
 
+    # IMPORTANT: I have edited the steam library
     res = steam.apps.search_games(query)['apps']
     ids = [r['id'] for r in res]
 
@@ -201,6 +202,18 @@ def get_owned_games():
     else:
         return 'Please <a href="/?login=true">log in</a>'
 
+@app.route('/delete_account')
+def delete_account():
+    steamID = request.cookies.get('steam_id')
+
+    if steamID is not None:
+        database.users.delete_one({'steam_id': steamID})
+        response = make_response(redirect('/'))
+        response.set_cookie('steam_id', '', expires=0)
+        return response
+    else:
+        return 'Please <a href="/?login=true">log in</a>'
+
 @app.route('/my_account')
 def my_account():
     steamID = request.cookies.get('steam_id')
@@ -218,7 +231,7 @@ def my_account():
             games=user_data['games'],
             ratings=user_data['star_ratings'],
             total_rating=user_data['total_rating'],
-            rating_count=user_data['rating_count'],
+            rating_count=user_data['rating_count'] or 1,
             average_rating=average_rating,
             stars_count=round(average_rating),
             comments=user_data['comments']
