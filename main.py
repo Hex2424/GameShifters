@@ -21,6 +21,11 @@ def run_in_subprocess(func, process_count=8):
     with Pool(process_count) as pool:
         pool.map(func, range(process_count))
 
+
+def get_avatar_url(steam_id):
+    return steam.users.get_user_details(steam_id)['player']['avatarfull']
+
+
 def update_top_games():
     recommended_games = []
     recommended_games_json = requests.get('https://steamspy.com/api.php?request=top100in2weeks').json()
@@ -178,8 +183,10 @@ def search():
         if game_data:
             games.append(game_data)
 
+    steamID = request.cookies.get('steam_id')
     return render_template(
         'search.html',
+        avatar=get_avatar_url(steamID),
         query=query,
         games=games,
     )

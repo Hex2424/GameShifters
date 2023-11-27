@@ -27,17 +27,18 @@
         <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
         <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
         <!-- make icon smaller -->
-        <li><img src="{{ avatar }}" style="height: 50px;" alt="Avatar"></li>
+        <li><img class="avatar" src="{{ avatar }}" alt="Avatar"></li>
         <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
    
     </div>
     
     <div id="sub-navigation"></div>
+
     <div class="search-bar">
       <form action="#" method="get" id="searchForm">
-        <input type="text" name="search" id="searchInput" value="{{ query }}" placeholder="Search...">
-        <button type="submit" id="searchButton">Search</button>
+        <input type="text" name="search" id="searchInput" placeholder="Search...">
+        <button type="submit" id="searchButton"><i class="fa fa-search" aria-hidden="true"></i></button>
       </form>
     </div>
   
