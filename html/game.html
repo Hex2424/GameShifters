@@ -56,9 +56,11 @@
           <p><strong>Rating:</strong> {{ game.rating }} / 10</p>
         </div>
 
+        {% if game.required_age %}
         <div class="age">
           <p><strong>Required Age:</strong> {{ game.required_age }}</p>
         </div>
+        {% endif %}
 
         <div class="description">
           <p>{{ game.short_description }}</p>
@@ -69,6 +71,7 @@
           <p>{{ game.detailed_description | safe}}</p>
         </div>
 
+        {% if game.pc_requirements.minimum or game.pc_requirements.recommended %}
         <div class="pc-requirements">
           <h3>PC Requirements</h3>
           <div style="display: grid;">
@@ -80,6 +83,7 @@
           </div>
         </div>
         </div>
+        {% endif %}
 
         <div class="genres">
           <h3>Genres</h3>
@@ -97,10 +101,21 @@
           {% endfor %}
         </div>
 
+        {% if game.release_date %}
         <div class="release-date">
-          <p><strong>Release Date:</strong> {{ game.release_date}}</p>
+          <p><strong>Release Date:</strong> {{ game.release_date }}</p>
         </div>
+        {% endif %}
         
+        <br />
+        {% if game.offers %}
+        <div class="game-owners">
+          <h2 style="text-align: inherit;">Owners:</h2> 
+          {% for owner in game.users %}
+          <img src="{{ owner.avatar }}" title="{{ owner.username }}" alt="{{owner.username }} avatar">
+          {% endfor %}
+        </div>
+        {% endif %}
 
         <div class="cl">&nbsp;</div>
       </div>

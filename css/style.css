@@ -949,3 +949,7 @@ h1#logo a {
 		margin-bottom: 10px;
    }
 	
+   .game-owners img {
+	width: 75px;
+	height: 75px;
+   }

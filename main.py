@@ -71,10 +71,31 @@ def logout():
     response.set_cookie('steam_id', '', expires=0)
     return response
 
+def get_game_owners(game_id):
+    users = database.users.aggregate([
+        {
+            '$match': {
+                'games.app_id': int(game_id)
+            }
+        }, {
+            '$project': {
+                '_id': 1, 
+                'username': 1, 
+                'avatar': 1
+            }
+        }
+    ])
+    users = list(users)
+    return users
+
 def get_app_data(app_id):
     try:
         app = database.apps.find_one({'app_id': app_id})
+        users = get_game_owners(app_id)
+
         if app:
+            app['offers'] = len(users)
+            app['users'] = users
             return app
         
         steamspy_data = requests.get(f'https://steamspy.com/api.php?request=appdetails&appid={app_id}').json()
@@ -103,9 +124,10 @@ def get_app_data(app_id):
             'release_date': app_data.get('release_date', {}).get('date', None),
             'background': app_data.get('background', None),
             'notes': app_data.get('notes', None),
-            'offers': 0,
         }
         database.apps.insert_one(app_data)
+        app_data['offers'] = len(users)
+        app_data['users'] = users
         return app_data
     except Exception as e:
         print(e)
@@ -229,7 +251,7 @@ def my_account():
             games=user_data['games'],
             ratings=user_data['star_ratings'],
             total_rating=user_data['total_rating'],
-            rating_count=user_data['rating_count'] or 1,
+            rating_count=user_data['rating_count'],
             average_rating=average_rating,
             stars_count=round(average_rating),
             comments=user_data['comments']

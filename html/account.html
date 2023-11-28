@@ -61,6 +61,7 @@
             <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
             <div>
               <div class="user-score">
+                {% if rating_count > 0 %}
                 <div class="score">
                   <span class="rating-heading">User Rating</span>
                   {% for _ in range(0, stars_count) %}
@@ -147,17 +148,22 @@
                   </div>
               
                 </div>
-                  <div class="comments">
-                    <h1 style="margin-bottom: 15px">Comments</h1>
-                    
-                    {% for comment in comments %}
-                    <div class="comment">
-                      <p><span class="commenter-name">{{ comment.author }}</span></p> 
-                      <p class="comment-content">{{ comment.content }}</p>
-                      <p>{{ comment.date }}</p>
-                    </div>
-                    {% endfor %}
-              </div>
+                <div class="comments">
+                  <h1 style="margin-bottom: 15px">Comments</h1>
+                  
+                  {% for comment in comments %}
+                  <div class="comment">
+                    <p><span class="commenter-name">{{ comment.author }}</span></p> 
+                    <p class="comment-content">{{ comment.content }}</p>
+                    <p>{{ comment.date }}</p>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <div class="score">
+                <p>No ratings.</p>
+                </div>
+                {% endif %}
         </div></div>
           </div>
           <div class="tab-2">
