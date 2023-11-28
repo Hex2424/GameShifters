@@ -43,7 +43,6 @@ def update_top_games():
 def main():
     steam_id = request.cookies.get('steam_id')
 
-
     if not steam_id:
         return render_template('index.html')
 
