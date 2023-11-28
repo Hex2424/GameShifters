@@ -33,7 +33,49 @@
    
     </div>
     
-    <div id="sub-navigation"></div>
+    <div id="sub-navigation">
+      <div id="filters">
+        <div class="filter-item">
+          <input type="checkbox" id="action" name="action">
+          <label for="action">Action</label>
+        </div>
+        
+        <div class="filter-item">
+          <input type="checkbox" id="adventure" name="adventure">
+          <label for="adventure">Adventure</label>
+        </div>
+        
+        <div class="filter-item">
+          <input type="checkbox" id="strategy" name="strategy">
+          <label for="strategy">Strategy</label>
+        </div>
+        
+        <div class="filter-item">
+          <input type="checkbox" id="horror" name="horror">
+          <label for="horror">Horror</label>
+        </div>
+        
+        <div class="filter-item">
+          <input type="checkbox" id="role-playing" name="role-playing">
+          <label for="role-playing">Role-Playing</label>
+        </div>
+        
+        <div class="filter-item">
+          <input type="checkbox" id="survival" name="survival">
+          <label for="survival">Survival</label>
+        </div>
+        
+        <div class="filter-item">
+          <input type="checkbox" id="sports" name="sports">
+          <label for="sports">Sports</label>
+        </div>
+
+        <div class="filter-item">
+          <input type="checkbox" id="simulation" name="simulation">
+          <label for="simulation">Simulation</label>
+        </div>
+      </div>
+    </div>
 
     <div class="search-bar">
       <form action="#" method="get" id="searchForm">
@@ -48,7 +90,13 @@
     <div id="content">
       <div class="box">
         <div class="head">
-          <h2>Top games</h2>
+          <select name="sorting" id="sorting">
+            <option value="top">Top Games</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+            <option value="new">Newest Games</option>
+            <option value="old">Oldest Games</option>
+          </select>
           <p class="text-right"><a href="#">See all</a></p>
         </div>
 
