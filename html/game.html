@@ -46,24 +46,60 @@
   </div>
   <div id="main">
     <div id="content">
-      <div class="box">
-        <div class="head">
-          <h2>Search results for <i>{{ query }}</i></h2>
+      <div class="box game-info">
+
+        <span class="header">
+          <h2>{{ game.name }}</h2>
+          <img src="{{ game.header_image }}" alt="{{ game.name }} Header Image">
+        </span>
+        <div class="game-rating">
+          <p><strong>Rating:</strong> {{ game.rating }} / 10</p>
         </div>
 
-        {% for game in games %}
-          <div class="game">
-              <div class="game-image">
-                  <span class="play"><span class="name">{{ game.name }}</span></span>
-                  <a href="/game?id={{ game.app_id }}"><img src="{{ game.header_image }}" alt="" /></a>
-              </div>
-              <div class="rating">
-                  <p>RATING</p>
-                  <p>&nbsp;{{ game.rating }}/10</p>
-                  <span class="trades"><i class="fa-solid fa-right-left"></i>{{ game.offers }}</span>
-              </div>
+        <div class="age">
+          <p><strong>Required Age:</strong> {{ game.required_age }}</p>
+        </div>
+
+        <div class="description">
+          <p>{{ game.short_description }}</p>
+        </div>
+
+        <div class="long-description">
+          <h3>Description</h3>
+          <p>{{ game.detailed_description | safe}}</p>
+        </div>
+
+        <div class="pc-requirements">
+          <h3>PC Requirements</h3>
+          <div style="display: grid;">
+          <div class="minimum">
+            <p>{{ game.pc_requirements.minimum | safe}}</p>
           </div>
+          <div class="recommended">
+            <p>{{ game.pc_requirements.recommended | safe}}</p>
+          </div>
+        </div>
+        </div>
+
+        <div class="genres">
+          <h3>Genres</h3>
+          <ul>
+              {% for genre in game.genres %}
+              <li>{{ genre.description }}</li>
+              {% endfor %}
+          </ul>
+        </div>
+
+        <div class="developers">
+          <h3>Developers</h3>
+          {% for dev in game.developers %}
+          <p>{{ dev }}</p>
           {% endfor %}
+        </div>
+
+        <div class="release-date">
+          <p><strong>Release Date:</strong> {{ game.release_date}}</p>
+        </div>
         
 
         <div class="cl">&nbsp;</div>
@@ -76,8 +112,6 @@
     <div style="clear:both;"></div>
   </div>
 </div>
-<!-- END PAGE SOURCE -->
-<!-- Add this div for the login popup -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('searchForm').addEventListener('submit', function(event) {
@@ -91,5 +125,7 @@
     });
   });
 </script>
+<!-- END PAGE SOURCE -->
+<!-- Add this div for the login popup -->
 </body>
 </html>

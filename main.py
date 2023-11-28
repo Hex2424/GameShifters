@@ -41,10 +41,10 @@ def update_top_games():
 
 @app.route('/')
 def main():
-    steamID = request.cookies.get('steam_id')
+    steam_id = request.cookies.get('steam_id')
 
 
-    if not steamID:
+    if not steam_id:
         return render_template('index.html')
 
     # TODO: Run periodically
@@ -52,7 +52,7 @@ def main():
 
     top_games = list(database.top_games.find({}))
 
-    user = steam.users.get_user_details(steamID)['player']
+    user = steam.users.get_user_details(steam_id)['player']
     return render_template(
         'index_logged_in.html',
         username=user['personaname'],
@@ -81,7 +81,7 @@ def get_app_data(app_id):
         score = steamspy_data['positive'] / (steamspy_data['positive'] + steamspy_data['negative']) * 10
 
         app_data = None
-        app_data_response = requests.get(f'http://store.steampowered.com/api/appdetails?appids={app_id}').json()
+        app_data_response = requests.get(f'http://store.steampowered.com/api/appdetails?appids={app_id}&lang=en').json()
 
         if app_data_response[str(app_id)]['success']:
             app_data = app_data_response[str(app_id)]['data']
@@ -111,24 +111,22 @@ def get_app_data(app_id):
         print(e)
         return None
 
-def update_user_data(steamID):
-    user_data = database.users.find_one({'steam_id': steamID})
+def update_user_data(steam_id):
+    user_data = database.users.find_one({'steam_id': steam_id})
 
-    user = steam.users.get_user_details(steamID)['player']
-    steam_level = steam.users.get_user_steam_level(steamID)
-    owned_games = steam.users.get_owned_games(steamID)['games']
+    user = steam.users.get_user_details(steam_id)['player']
+    steam_level = steam.users.get_user_steam_level(steam_id)
+    owned_games = steam.users.get_owned_games(steam_id)['games']
 
-    games = []
-    for owned_game in owned_games:
-        app_id = owned_game['appid']
+    ids = [game['appid'] for game in owned_games]
 
-        game_data = get_app_data(app_id)
-        if game_data:
-            games.append(game_data)
+    with ThreadPoolExecutor() as executor:
+        # Use executor.map to parallelize the get_app_data calls
+        games = list(executor.map(get_app_data, ids))
     
     if user_data is None:
         database.users.insert_one({
-            'steam_id': steamID,
+            'steam_id': steam_id,
             'username': user['personaname'],
             'avatar': user['avatarfull'],
             'steam_level': steam_level['player_level'],
@@ -140,7 +138,7 @@ def update_user_data(steamID):
         })
     else:
         database.users.update_one(
-            {'steam_id': steamID},
+            {'steam_id': steam_id},
             {'$set': {
                 'username': user['personaname'],
                 'avatar': user['avatarfull'],
@@ -153,16 +151,16 @@ def update_user_data(steamID):
 def process():
     returnData = request.values
     steamLogin = SteamSignIn()
-    steamID = steamLogin.ValidateResults(returnData)
+    steam_id = steamLogin.ValidateResults(returnData)
 
-    if not steamID:
+    if not steam_id:
         return 'Failed to log in'
 
     # TODO: Run in subprocess
-    update_user_data(steamID)
+    update_user_data(steam_id)
 
     response = make_response(redirect('/'))
-    response.set_cookie('steam_id', steamID, secure=True)
+    response.set_cookie('steam_id', steam_id, secure=True)
     return response
 
 @app.route('/search')
@@ -184,30 +182,30 @@ def search():
         if game_data:
             games.append(game_data)
 
-    steamID = request.cookies.get('steam_id')
+    steam_id = request.cookies.get('steam_id')
     return render_template(
         'search.html',
-        avatar=get_avatar_url(steamID),
+        avatar=get_avatar_url(steam_id),
         query=query,
         games=games,
     )
 
 @app.route('/get_owned_games')
 def get_owned_games():
-    steamID = request.cookies.get('steam_id')
+    steam_id = request.cookies.get('steam_id')
 
-    if steamID is not None:
-        owned_games = steam.users.get_owned_games(steamID)
+    if steam_id is not None:
+        owned_games = steam.users.get_owned_games(steam_id)
         return jsonify({"owned_games": owned_games})
     else:
         return 'Please <a href="/?login=true">log in</a>'
 
 @app.route('/delete_account')
 def delete_account():
-    steamID = request.cookies.get('steam_id')
+    steam_id = request.cookies.get('steam_id')
 
-    if steamID is not None:
-        database.users.delete_one({'steam_id': steamID})
+    if steam_id is not None:
+        database.users.delete_one({'steam_id': steam_id})
         response = make_response(redirect('/'))
         response.set_cookie('steam_id', '', expires=0)
         return response
@@ -216,10 +214,10 @@ def delete_account():
 
 @app.route('/my_account')
 def my_account():
-    steamID = request.cookies.get('steam_id')
+    steam_id = request.cookies.get('steam_id')
 
-    if steamID is not None:
-        user_data = database.users.find_one({'steam_id': steamID})
+    if steam_id is not None:
+        user_data = database.users.find_one({'steam_id': steam_id})
 
         average_rating = round(user_data['total_rating'] / user_data['rating_count'], 2) if user_data['rating_count'] > 0 else 0
 
@@ -236,6 +234,22 @@ def my_account():
             stars_count=round(average_rating),
             comments=user_data['comments']
         )
+
+@app.route('/game')
+def game():
+    steam_id = request.cookies.get('steam_id')
+    game_id = request.args.get('id')
+
+    if game_id is None:
+        raise Exception('PAGE NOT FOUND')
+    
+    game_data = get_app_data(game_id)
+    return render_template(
+        'game.html',
+        avatar=get_avatar_url(steam_id),
+        game=game_data
+    )
+    
 
 if __name__ == '__main__':
     app.run(port=80, host="127.0.0.1", debug=True) 

@@ -896,3 +896,56 @@ h1#logo a {
 	  #searchButton:hover {
 		background-color: #0A66C2;
 	  }
+
+	  .game-info .header img {
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+		padding: 25px;
+	  }
+
+	  .game-info img {
+		margin-top: 10px;
+		margin-bottom: 10px;
+	  }
+	  
+	  .game-info h2 {
+		text-align: center;
+   }
+	.game-info .game-rating, .game-info .age, .game-info .description, .game-info .long-description, .game-info .pc-requirements, .game-info .genres, .game-info .developers, .game-info .release-date {
+		margin-top: 20px;
+   }
+   .game-image .pc-requirements {
+		line-height: 1.6;
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: 1fr;
+		grid-column-gap: 0px;
+		grid-row-gap: 0px; 
+   }
+   .game-info .pc-requirements .minimum {
+	grid-area: 1 / 1 / 2 / 2;
+   }
+   .game-info .pc-requirements .recommended {
+	grid-area: 1 / 2 / 2 / 3;
+   }
+	/* .game-info p {
+		line-height: 1.6;
+		color: #555;
+   } */
+	.game-info ul {
+		list-style-type: none;
+		padding: 0;
+   }
+	.game-info ul li {
+		margin-bottom: 5px;
+   }
+   .game-info p strong {
+	color: #f2a223;
+   }
+	.game-info h3 {
+		color: #1a90ff;
+		border-bottom: 2px solid #333;
+		padding-bottom: 5px;
+		margin-bottom: 10px;
+   }
+	
