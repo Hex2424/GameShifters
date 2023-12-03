@@ -1,5 +1,5 @@
-import os
-from flask import Flask, request, make_response, jsonify, render_template, redirect
+import datetime
+from flask import Flask, Response, request, make_response, jsonify, render_template, redirect
 from decouple import config
 from steam import Steam
 from pysteamsignin.steamsignin import SteamSignIn
@@ -16,6 +16,31 @@ steam = Steam(KEY)
 
 mongodb = pymongo.MongoClient(config("MONGO_URI"))
 database = mongodb.game_shifters
+
+def format_time_ago(message_timestamp):
+    current_time = datetime.datetime.now()
+    time_difference = current_time - message_timestamp
+
+    if time_difference < datetime.timedelta(minutes=1):
+        return 'just now'
+    elif time_difference < datetime.timedelta(hours=1):
+        minutes = int(time_difference.total_seconds() / 60)
+        return f'{minutes} minute ago' if minutes == 1 else f'{minutes} minutes ago'
+    elif time_difference < datetime.timedelta(days=1):
+        hours = int(time_difference.total_seconds() / 3600)
+        return f'{hours} hour ago' if hours == 1 else f'{hours} hours ago'
+    elif time_difference < datetime.timedelta(days=7):
+        days = int(time_difference.total_seconds() / 86400)
+        return f'{days} day ago' if days == 1 else f'{days} days ago'
+    elif time_difference < datetime.timedelta(days=30):
+        weeks = int(time_difference.total_seconds() / 604800)
+        return f'{weeks} week ago' if weeks == 1 else f'{weeks} weeks ago'
+    elif time_difference < datetime.timedelta(days=365):
+        months = int(time_difference.total_seconds() / 2592000)
+        return f'{months} month ago' if months == 1 else f'{months} months ago'
+    else:
+        years = int(time_difference.total_seconds() / 31536000)
+        return f'{years} year ago' if years == 1 else f'{years} years ago'
 
 def run_in_subprocess(func, process_count=8):
     with Pool(process_count) as pool:
@@ -270,6 +295,88 @@ def game():
         avatar=get_avatar_url(steam_id),
         game=game_data
     )
+
+@app.route('/messages')
+def messages():
+    steam_id = request.cookies.get('steam_id')
+
+    if steam_id is None:
+        return redirect('/')
+
+    user_data = database.users.find_one({'steam_id': steam_id})
+    return render_template(
+        'messages.html',
+        username=user_data['username'],
+        avatar=user_data['avatar'],
+    )
+
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    # response = make_response()
+    # response.set_cookie('steam_id', '76561199380456538', secure=True)
+    # return response
+
+    try:
+        steam_id = request.cookies.get('steam_id')
+
+        message = request.get_json()
+        message = {
+            'from': steam_id,
+            'to': request.json['user_id'],
+            'content': request.json['content'],
+            'timestamp': datetime.datetime.now(),
+        }
+        print(message)
+
+        database.messages.insert_one(message)
+    except Exception as e:
+        # Internal server error
+        return Response('Failed to send the message', status=500)
+    return 'OK'
+
+@app.route('/get_contacts')
+def get_contacts():
+    steam_id = request.cookies.get('steam_id')
+
+    if steam_id is None:
+        return Response('Not logged in', status=401)
+
+    from_ids = database.messages.distinct('from', {'to': steam_id})
+    to_ids = database.messages.distinct('to', {'from': steam_id})
+    contact_ids = list(set(from_ids + to_ids))
+
+    contacts = database.users.find({'steam_id': {'$in': contact_ids}}, {'_id': 0, 'steam_id': 1, 'username': 1, 'avatar': 1})
+
+    return jsonify({
+        'contacts': list(contacts),
+    })
+
+
+@app.route('/get_messages')
+def get_messages():
+    steam_id = request.cookies.get('steam_id')
+
+    if steam_id is None:
+        return Response('Not logged in', status=401)
+
+    user_id = request.args.get('user_id')
+
+    messages = database.messages.find(
+        {'$or': [
+            {'from': steam_id, 'to': user_id},
+            {'from': user_id, 'to': steam_id},
+        ]},
+        {'_id': 0}
+    )
+
+    messages = sorted(list(messages), key=lambda m: m['timestamp'])
+    for message in messages:
+        # show how long ago the message was sent (e.g. 5 minutes ago, 1 hour ago, 1 day ago)
+        message['timestamp'] = format_time_ago(message['timestamp'])
+
+    return jsonify({
+        'messages': messages,
+    })
     
 
 if __name__ == '__main__':

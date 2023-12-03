@@ -1,0 +1,343 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>GameShifters</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
+<link rel="stylesheet" href="css/messages.css" type="text/css" media="all" />
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-func.js"></script>
+<script src="https://kit.fontawesome.com/e1977a1fe2.js" crossorigin="anonymous"></script>
+<!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
+</head>
+<body>
+<!-- START PAGE SOURCE -->
+<div id="shell">
+  <div id="header">
+    <!-- <form class="header-form" action="#" method="post" id="loginForm">
+      <label for="username">Steam ID:</label>
+      <input type="text" name="username" id="username"/>
+
+      
+  </form> -->
+    <h1 id="logo"><a href="/">GameShifters</a></h1>
+    <div id="navigation">
+      <ul>
+        <li><a class="active" href="/">HOME</a></li>
+        <li><a href="#">NEW GAMES</a></li>
+        <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
+        <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
+        <!-- make icon smaller -->
+        <li><img class="avatar" src="{{ avatar }}" alt="Avatar"></li>
+        <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+   
+    </div>
+    
+    <div id="sub-navigation"></div>
+
+    <div class="search-bar">
+      <form action="#" method="get" id="searchForm">
+        <input type="text" name="search" id="searchInput" placeholder="Search...">
+        <button type="submit" id="searchButton"><i class="fa fa-search" aria-hidden="true"></i></button>
+      </form>
+    </div>
+  
+    
+  </div>
+  <div id="main">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<div class="container">
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card chat-app">
+            <div id="plist" class="people-list">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Search...">
+                </div>
+                <ul class="list-unstyled chat-list mt-2 mb-0">
+                    <!-- CONTACTS -->
+                </ul>
+            </div>
+            <div class="chat">
+                <div class="chat-header clearfix" id="chatHeader">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                <img id="contactAvatar" src="" alt="">
+                            </a>
+                            <div class="chat-about">
+                                <h6 id="contactName" class="m-b-0"></h6>
+                                <small id="lastSeen"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-history">
+                    <ul class="m-b-0">
+                        <!-- MESSAGES -->
+                    </ul>
+                </div>
+                <div class="chat-message clearfix">
+                    <div class="input-group mb-0" style="width: 100%;">
+                        <div class="input-group-prepend" id="send-message-btn" onclick="sendMessage()">
+                            <span class="input-group-text"><i class="fa fa-send"></i></span>
+                        </div>
+                        <input type="text" id="message-content" class="form-control" placeholder="Enter text here...">                                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+  </div>
+  <div id="footer">
+    <p class="lf">Copyright &copy; 2023 <a href="/">GameShifters</a> - All Rights Reserved</p>
+    <div style="clear:both;"></div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission
+      
+      // Get the search input value
+      var searchValue = document.getElementById('searchInput').value;
+
+      // Redirect to the search URL with the query parameter
+      window.location.href = '/search?q=' + encodeURIComponent(searchValue);
+    });
+  });
+</script>
+<script>
+function getSteamIdFromCookie() {
+    const cookies = document.cookie.split('; ');
+
+    for (const cookie of cookies) {
+        const [name, value] = cookie.split('=');
+
+        if (name === 'steam_id') {
+            return value;
+        }
+    }
+
+    return null; // Return null if the cookie is not found
+}
+function fetchMessages(user_id) {
+    const my_id = getSteamIdFromCookie();
+    fetch(`/get_messages?user_id=${user_id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const messages = data.messages;
+            console.log('Messages:', messages);
+            const messageList = document.querySelector('.chat-history ul');
+
+
+            // Clear the message list
+            messageList.innerHTML = '';
+
+            const myAvatar = document.querySelector('.avatar').src;
+            const contactAvatar = document.getElementById('contactAvatar').src;
+
+            messages.forEach(message => {
+                const messageElement = document.createElement('li');
+                messageElement.classList.add('clearfix');
+
+                if (message.from === my_id) {
+                    messageElement.innerHTML = `
+                        <div class="message-data text-right">
+                            <span class="message-data-time">${message.timestamp}</span>
+                            <img src="${myAvatar}" alt="avatar">
+                        </div>
+                        <div class="message other-message float-right">${message.content}</div>
+                    `;
+                } else {
+                    messageElement.innerHTML = `
+                        <div class="message-data">
+                            <img src="${contactAvatar}" alt="avatar">
+                            <span class="message-data-time">${message.timestamp}</span>
+                        </div>
+                        <div class="message my-message">${message.content}</div>   
+                    `;
+                }
+                
+                messageList.appendChild(messageElement);
+            });
+            console.log(messageList);
+        })
+        .catch(error => {
+            console.error('Error fetching messages:', error);
+        });
+}
+
+function updateChatHeader(userId, userName, lastSeen, avatarUrl) {
+        const contactAvatar = document.getElementById('contactAvatar');
+        const contactName = document.getElementById('contactName');
+        const lastSeenElement = document.getElementById('lastSeen');
+
+        contactAvatar.src = avatarUrl;
+        contactName.textContent = userName;
+        lastSeenElement.textContent = `Last seen: ${lastSeen}`;
+    }
+
+function fetchContacts() {
+    fetch('/get_contacts')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const contacts = data.contacts;
+            const contactList = document.querySelector('.list-unstyled.chat-list');
+
+            contacts.forEach((contact, index) => {
+                const contactElement = document.createElement('li');
+                contactElement.classList.add('clearfix');
+                contactElement.setAttribute('data-user-id', contact.steam_id); // Set data attribute
+                contactElement.setAttribute('data-user-name', contact.username); // Set data attribute
+                contactElement.setAttribute('data-last-seen', contact.last_seen); // Set data attribute
+                contactElement.setAttribute('data-avatar-url', contact.avatar); // Set data attribute
+                // TODO: online status
+                contactElement.innerHTML = `
+                    <img src="${contact.avatar}" alt="avatar">
+                    <div class="about">
+                        <div class="name">${contact.username}</div>
+                        <div class="status">
+                            <i class="fa fa-circle ${contact.online ? 'online' : 'offline'}"></i>
+                            ${contact.online ? 'Online' : `Last seen: ${contact.last_seen}`}
+                        </div>
+                    </div>
+                `;
+
+                // Add an "active" class to the first contact
+                if (index === 0) {
+                    contactElement.classList.add('active');
+                    const userId = contactElement.getAttribute('data-user-id');
+                    const userName = contactElement.getAttribute('data-user-name');
+                    const lastSeen = contactElement.getAttribute('data-last-seen');
+                    const avatarUrl = contactElement.getAttribute('data-avatar-url');
+
+                    // Remove "active" class from all contacts
+                    document.querySelectorAll('.list-unstyled.chat-list li').forEach(item => {
+                        item.classList.remove('active');
+                    });
+
+                    // Add "active" class to the clicked contact
+                    contactElement.classList.add('active');
+
+                    // Update the chat header
+                    updateChatHeader(userId, userName, lastSeen, avatarUrl);
+
+                    // TODO: Fetch messages for the selected contact
+                    console.log('Clicked user ID:', userId);
+                    fetchMessages(userId);
+                }
+
+                // Add a click event listener to handle contact activation
+                contactElement.addEventListener('click', () => {
+                    // Get the user ID from the data attribute
+                    const userId = contactElement.getAttribute('data-user-id');
+                    const userName = contactElement.getAttribute('data-user-name');
+                    const lastSeen = contactElement.getAttribute('data-last-seen');
+                    const avatarUrl = contactElement.getAttribute('data-avatar-url');
+
+                    // Remove "active" class from all contacts
+                    document.querySelectorAll('.list-unstyled.chat-list li').forEach(item => {
+                        item.classList.remove('active');
+                    });
+
+                    // Add "active" class to the clicked contact
+                    contactElement.classList.add('active');
+
+                    // Update the chat header
+                    updateChatHeader(userId, userName, lastSeen, avatarUrl);
+
+                    // TODO: Fetch messages for the selected contact
+                    console.log('Clicked user ID:', userId);
+                    fetchMessages(userId);
+                });
+
+                // Append the contact element to the contact list
+                contactList.appendChild(contactElement);
+            });
+            var objDiv = document.getElementsByClassName("chat-history")[0];
+            setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 100);
+        })
+        .catch(error => {
+            console.error('Error fetching contacts:', error);
+        });
+}
+
+window.onload = function() {
+    fetchContacts();
+};
+
+function sendMessage() {
+    const messageInput = document.getElementById('message-content');
+    const content = messageInput.value;
+    console.log('Sending message:', content);
+
+    // You might need to get the 'user_id' dynamically based on your application logic
+    const userElement = document.querySelector('.list-unstyled.chat-list li.active');
+    const userId = userElement.getAttribute('data-user-id');
+    console.log('User ID:', userId);
+
+    fetch('/send_message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            content: content
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response;
+        })
+        .then(data => {
+            console.log('Message sent:', data);
+            messageInput.value = ''; // Clear the message input field
+            fetchMessages(userId); // Fetch messages again
+            // scroll to bottom
+            var objDiv = document.getElementsByClassName("chat-history")[0];
+            // add delay
+            setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 100);
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+        });
+}
+
+// Fetch messages every 5 seconds
+setInterval(() => {
+    const userElement = document.querySelector('.list-unstyled.chat-list li.active');
+    const userId = userElement.getAttribute('data-user-id');
+    fetchMessages(userId);
+}, 5000);
+
+document.getElementById('message-content').addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+<!-- END PAGE SOURCE -->
+<!-- Add this div for the login popup -->
+</body>
+</html>
