@@ -341,14 +341,87 @@ def get_contacts():
     if steam_id is None:
         return Response('Not logged in', status=401)
 
-    from_ids = database.messages.distinct('from', {'to': steam_id})
-    to_ids = database.messages.distinct('to', {'from': steam_id})
-    contact_ids = list(set(from_ids + to_ids))
+    contacts = database.messages.aggregate([
+        {
+            '$match': {
+                '$or': [
+                    {
+                        'from': steam_id
+                    }, {
+                        'to': steam_id
+                    }
+                ]
+            }
+        }, {
+            '$group': {
+                '_id': {
+                    'from': '$from', 
+                    'to': '$to'
+                }, 
+                'timestamp': {
+                    '$last': '$timestamp'
+                }
+            }
+        }, {
+            '$project': {
+                '_id': 0, 
+                'timestamp': 1, 
+                'steam_id': {
+                    '$cond': {
+                        'if': {
+                            '$eq': [
+                                '$_id.from', steam_id
+                            ]
+                        }, 
+                        'then': '$_id.to', 
+                        'else': '$_id.from'
+                    }
+                }
+            }
+        }, {
+            '$lookup': {
+                'from': 'users', 
+                'localField': 'steam_id', 
+                'foreignField': 'steam_id', 
+                'as': 'user_info'
+            }
+        }, {
+            '$unwind': '$user_info'
+        }, {
+            '$sort': {
+                'timestamp': -1
+            }
+        }, {
+            '$group': {
+                '_id': '$steam_id', 
+                'latestTimestamp': {
+                    '$first': '$timestamp'
+                }, 
+                'username': {
+                    '$first': '$user_info.username'
+                }, 
+                'avatar': {
+                    '$first': '$user_info.avatar'
+                }
+            }
+        }, {
+            '$project': {
+                '_id': 0, 
+                'steam_id': '$_id', 
+                'username': 1, 
+                'avatar': 1, 
+                'timestamp': '$latestTimestamp'
+            }
+        }
+    ])
+    contacts = list(contacts)
+    contacts = sorted(contacts, key=lambda c: c['timestamp'], reverse=True)
+    # contact_ids = [c['steam_id'] for c in contacts]
 
-    contacts = database.users.find({'steam_id': {'$in': contact_ids}}, {'_id': 0, 'steam_id': 1, 'username': 1, 'avatar': 1})
+    # contacts = database.users.find({'steam_id': {'$in': contact_ids}}, {'_id': 0, 'steam_id': 1, 'username': 1, 'avatar': 1})
 
     return jsonify({
-        'contacts': list(contacts),
+        'contacts': contacts,
     })
 
 
