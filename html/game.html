@@ -112,7 +112,9 @@
         <div class="game-owners">
           <h2 style="text-align: inherit;">Owners:</h2> 
           {% for owner in game.users %}
-          <img src="{{ owner.avatar }}" title="{{ owner.username }}" alt="{{owner.username }} avatar">
+          <a href="/user?id={{ owner.steam_id }}">
+            <img src="{{ owner.avatar }}" title="{{ owner.username }}" alt="{{ owner.username }} avatar">
+          </a>
           {% endfor %}
         </div>
         {% endif %}

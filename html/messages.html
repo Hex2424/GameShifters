@@ -1,12 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 <title>GameShifters</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
 <link rel="stylesheet" href="css/messages.css" type="text/css" media="all" />
-<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
-<script type="text/javascript" src="js/jquery-func.js"></script>
 <script src="https://kit.fontawesome.com/e1977a1fe2.js" crossorigin="anonymous"></script>
 <!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
 </head>
@@ -57,7 +55,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-search"></i></span>
                     </div>
-                    <input type="text" class="form-control" placeholder="Search...">
+                    <input type="text" id="contactSearchInput" class="form-control" placeholder="Search...">
                 </div>
                 <ul class="list-unstyled chat-list mt-2 mb-0">
                     <!-- CONTACTS -->
@@ -71,7 +69,7 @@
                                 <img id="contactAvatar" src="" alt="">
                             </a>
                             <div class="chat-about">
-                                <h6 id="contactName" class="m-b-0"></h6>
+                                <h3 id="contactName" style="color: #ccc" class="m-b-0"></h3>
                                 <small id="lastSeen"></small>
                             </div>
                         </div>
@@ -139,7 +137,6 @@ function fetchMessages(user_id) {
         })
         .then(data => {
             const messages = data.messages;
-            console.log('Messages:', messages);
             const messageList = document.querySelector('.chat-history ul');
 
 
@@ -150,6 +147,10 @@ function fetchMessages(user_id) {
             const contactAvatar = document.getElementById('contactAvatar').src;
 
             messages.forEach(message => {
+                if (message.hidden) {
+                    return;
+                }
+                
                 const messageElement = document.createElement('li');
                 messageElement.classList.add('clearfix');
 
@@ -173,7 +174,6 @@ function fetchMessages(user_id) {
                 
                 messageList.appendChild(messageElement);
             });
-            console.log(messageList);
             var objDiv = document.getElementsByClassName("chat-history")[0];
             // add delay
             setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 5);
@@ -193,7 +193,7 @@ function updateChatHeader(userId, userName, lastSeen, avatarUrl) {
         lastSeenElement.textContent = `Last seen: ${lastSeen}`;
     }
 
-function fetchContacts() {
+function fetchContacts(activeId = 0) {
     fetch('/get_contacts')
         .then(response => {
             if (!response.ok) {
@@ -226,7 +226,7 @@ function fetchContacts() {
                 `;
 
                 // Add an "active" class to the first contact
-                if (index === 0) {
+                if (index === activeId) {
                     contactElement.classList.add('active');
                     const userId = contactElement.getAttribute('data-user-id');
                     const userName = contactElement.getAttribute('data-user-name');
@@ -244,8 +244,7 @@ function fetchContacts() {
                     // Update the chat header
                     updateChatHeader(userId, userName, lastSeen, avatarUrl);
 
-                    // TODO: Fetch messages for the selected contact
-                    console.log('Clicked user ID:', userId);
+                    // Fetch messages for the selected contact
                     fetchMessages(userId);
                 }
 
@@ -269,7 +268,6 @@ function fetchContacts() {
                     updateChatHeader(userId, userName, lastSeen, avatarUrl);
 
                     // TODO: Fetch messages for the selected contact
-                    console.log('Clicked user ID:', userId);
                     fetchMessages(userId);
                 });
 
@@ -291,12 +289,10 @@ window.onload = function() {
 function sendMessage() {
     const messageInput = document.getElementById('message-content');
     const content = messageInput.value;
-    console.log('Sending message:', content);
 
     // You might need to get the 'user_id' dynamically based on your application logic
     const userElement = document.querySelector('.list-unstyled.chat-list li.active');
     const userId = userElement.getAttribute('data-user-id');
-    console.log('User ID:', userId);
 
     fetch('/send_message', {
         method: 'POST',
@@ -315,13 +311,18 @@ function sendMessage() {
             return response;
         })
         .then(data => {
-            console.log('Message sent:', data);
             messageInput.value = ''; // Clear the message input field
             fetchMessages(userId); // Fetch messages again
             // scroll to bottom
             var objDiv = document.getElementsByClassName("chat-history")[0];
-            // add delay
-            fetchContacts();
+            const userElement = document.querySelector('.list-unstyled.chat-list li.active');
+            // Get all elements with the class 'chat-list'
+            const chatListItems = document.querySelectorAll('.list-unstyled.chat-list li');
+
+            // Find the index of the userElement within the chatListItems
+            const userIndex = Array.from(chatListItems).indexOf(userElement);
+
+            fetchContacts(userIndex);
             setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 5);
         })
         .catch(error => {
@@ -333,15 +334,42 @@ function sendMessage() {
 setInterval(() => {
     const userElement = document.querySelector('.list-unstyled.chat-list li.active');
     const userId = userElement.getAttribute('data-user-id');
+
+    // Get all elements with the class 'chat-list'
+    const chatListItems = document.querySelectorAll('.list-unstyled.chat-list li');
+
+    // Find the index of the userElement within the chatListItems
+    const userIndex = Array.from(chatListItems).indexOf(userElement);
+
     fetchMessages(userId);
-    fetchContacts();
+    fetchContacts(userIndex);
 }, 5000);
 
 document.getElementById('message-content').addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var searchInput = document.getElementById('contactSearchInput');
+    searchInput.value = '';
+
+    // Function to handle search
+    searchInput.addEventListener('input', function () {
+        var searchTerm = searchInput.value.toLowerCase();
+        var contacts = document.querySelectorAll('.chat-list li');
+
+        contacts.forEach(function (contact) {
+            var contactName = contact.querySelector('.name').textContent.toLowerCase();
+            if (contactName.includes(searchTerm)) {
+                contact.style.display = 'block';
+            } else {
+                contact.style.display = 'none';
+            }
+        });
     });
+});
 </script>
 <!-- END PAGE SOURCE -->
 <!-- Add this div for the login popup -->

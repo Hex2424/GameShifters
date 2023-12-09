@@ -7,6 +7,7 @@ import requests
 from multiprocessing import Pool
 import pymongo
 from concurrent.futures import ThreadPoolExecutor
+import threading
 
 
 app = Flask(__name__, template_folder='html', static_folder='css')
@@ -104,8 +105,9 @@ def get_game_owners(game_id):
         }, {
             '$project': {
                 '_id': 1, 
+                'steam_id': 1,
                 'username': 1, 
-                'avatar': 1
+                'avatar': 1,
             }
         }
     ])
@@ -281,6 +283,33 @@ def my_account():
             comments=user_data['comments']
         )
 
+
+@app.route('/user')
+def user():
+    user_id = request.args.get('id')
+
+    if user_id is None:
+        return 'User not found'
+
+    user_data = database.users.find_one({'steam_id': user_id})
+
+    average_rating = round(user_data['total_rating'] / user_data['rating_count'], 2) if user_data['rating_count'] > 0 else 0
+
+    return render_template(
+        'user.html',
+        username=user_data['username'],
+        avatar=user_data['avatar'],
+        steam_level=user_data['steam_level'],
+        games=user_data['games'],
+        ratings=user_data['star_ratings'],
+        total_rating=user_data['total_rating'],
+        rating_count=user_data['rating_count'],
+        average_rating=average_rating,
+        stars_count=round(average_rating),
+        comments=user_data['comments'],
+        user_id=user_id
+    )
+
 @app.route('/game')
 def game():
     steam_id = request.cookies.get('steam_id')
@@ -299,9 +328,23 @@ def game():
 @app.route('/messages')
 def messages():
     steam_id = request.cookies.get('steam_id')
-
     if steam_id is None:
         return redirect('/')
+
+    user_id = request.args.get('user_id')
+    if user_id is not None:
+        message = {
+            'from': steam_id,
+            'to': user_id,
+            'timestamp': datetime.datetime.now(),
+            'hidden': True,
+        }
+        database.messages.insert_one(message)
+
+        delete_thread = threading.Timer(10, database.messages.delete_one, [message])
+        delete_thread.start()
+
+        return redirect('/messages')
 
     user_data = database.users.find_one({'steam_id': steam_id})
     return render_template(

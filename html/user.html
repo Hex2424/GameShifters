@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>GameShifters</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-func.js"></script>
+<script src="https://kit.fontawesome.com/e1977a1fe2.js" crossorigin="anonymous"></script>
+<!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
+</head>
+<body>
+<!-- START PAGE SOURCE -->
+<div id="shell">
+  <div id="header">
+    <!-- <form class="header-form" action="#" method="post" id="loginForm">
+      <label for="username">Steam ID:</label>
+      <input type="text" name="username" id="username"/>
+
+      
+  </form> -->
+    <h1 id="logo"><a href="/">GameShifters</a></h1>
+    <div id="navigation">
+      <ul>
+        <li><a class="active" href="/">HOME</a></li>
+        <li><a href="#">NEW GAMES</a></li>
+        <li><a href="https://help.steampowered.com/en/" target="_blank">SUPPORT</a></li>
+        <li><a href="{{ url_for('my_account') }}">ACCOUNT</a></li>
+        <!-- make icon smaller -->
+        <li><img class="avatar" src="{{ avatar }}" alt="Avatar"></li>
+        <li><a class="logout-btn" href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+   
+    </div>
+    
+    <div id="sub-navigation"></div>
+
+    <div class="search-bar">
+      <form action="#" method="get" id="searchForm">
+        <input type="text" name="search" id="searchInput" placeholder="Search...">
+        <button type="submit" id="searchButton"><i class="fa fa-search" aria-hidden="true"></i></button>
+      </form>
+    </div>
+  
+    
+  </div>
+  <div id="main">
+    <div id="content">
+      <div class="box">
+        <div class="user-info">
+          <h1>{{ username }}</h1>
+          <img src="{{ avatar }}" alt="Avatar">
+          <p>Steam Level: <span class="account-level">{{ steam_level }}</span></p>
+        </div>
+        <a href="/messages?user_id={{ user_id }}">Write message</a>
+
+        
+        <div class="tabs">
+          <div class="tab-2">
+            <label for="tab2-1">Rating</label>
+            <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+            <div>
+              <div class="user-score">
+                {% if rating_count > 0 %}
+                <div class="score">
+                  <span class="rating-heading">User Rating</span>
+                  {% for _ in range(0, stars_count) %}
+                  <span class="fa fa-star checked"></span>
+                  {% endfor %}
+                  {% for _ in range(0, 5 - stars_count) %}
+                  <span class="fa fa-star"></span>
+                  {% endfor %}
+                  <p>{{ average_rating }} average based on {{ rating_count }} reviews.</p>
+        
+                  <!-- 5 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>5 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-5" style="width: {{ ratings[4] / rating_count * 100 }}%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>{{ ratings[4] }}</div>
+                    </div>
+                  </div>
+        
+                  <!-- 4 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>4 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-4" style="width: {{ ratings[3] / rating_count * 100 }}%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>{{ ratings[3] }}</div>
+                    </div>
+                  </div>
+        
+                  <!-- 3 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>3 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-3" style="width: {{ ratings[2] / rating_count * 100 }}%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>{{ ratings[2] }}</div>
+                    </div>
+                  </div>
+        
+                  <!-- 2 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>2 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-2" style="width: {{ ratings[1] / rating_count * 100 }}%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>{{ ratings[1] }}</div>
+                    </div>
+                  </div>
+        
+                  <!-- 1 stars -->
+                  <div class="row">
+                    <div class="side">
+                      <div>1 star</div>
+                    </div>
+                    <div class="middle">
+                      <div class="bar-container">
+                        <div class="bar-1" style="width: {{ ratings[0] / rating_count * 100 }}%;"></div>
+                      </div>
+                    </div>
+                    <div class="side rating-count">
+                      <div>{{ ratings[0] }}</div>
+                    </div>
+                  </div>
+              
+                </div>
+                <div class="comments">
+                  <h1 style="margin-bottom: 15px">Comments</h1>
+                  
+                  {% for comment in comments %}
+                  <div class="comment">
+                    <p><span class="commenter-name">{{ comment.author }}</span></p> 
+                    <p class="comment-content">{{ comment.content }}</p>
+                    <p>{{ comment.date }}</p>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <div class="score">
+                <p>No ratings.</p>
+                </div>
+                {% endif %}
+        </div></div>
+          </div>
+          <div class="tab-2">
+            <label for="tab2-2">Owned games</label>
+            <input id="tab2-2" name="tabs-two" type="radio">
+            <div>
+              <div class="owned-games">
+                {% for game in games %}
+                <div class="game">
+                    <div class="game-image">
+                        <span class="play"><span class="name">{{ game.name }}</span></span>
+                        <a href="/game?id={{ game.app_id }}"><img src="{{ game.header_image }}" alt="" /></a>
+                    </div>
+                    <div class="rating">
+                        <p>RATING</p>
+                        <p>&nbsp;{{ game.rating }}/10</p>
+                        <span class="trades"><i class="fa-solid fa-right-left"></i>{{ game.offers }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+              </div>
+        </div>
+          </div>
+        </div>
+
+          
+
+        <div class="cl">&nbsp;</div>
+      </div>
+      
+
+
+    </div>   
+    <div class="cl">&nbsp;</div>
+  </div>
+  <div id="footer">
+    <p class="lf">Copyright &copy; 2023 <a href="/">GameShifters</a> - All Rights Reserved</p>
+    <div style="clear:both;"></div>
+  </div>
+</div>
+<!-- END PAGE SOURCE -->
+<!-- Add this div for the login popup -->
+</body>
+<script>
+  /*
+Conic gradients are not supported in all browsers (https://caniuse.com/#feat=css-conic-gradients), so this pen includes the CSS conic-gradient() polyfill by Lea Verou (https://leaverou.github.io/conic-gradient/)
+*/
+
+// Find al rating items
+const ratings = document.querySelectorAll(".user-rating");
+
+// Iterate over all rating items
+ratings.forEach((rating) => {
+  // Get content and get score as an int
+  const ratingContent = rating.innerHTML;
+  const ratingScore = parseInt(ratingContent, 10);
+
+  // Define if the score is good, meh or bad according to its value
+  const scoreClass =
+    ratingScore < 40 ? "bad" : ratingScore < 60 ? "meh" : "good";
+
+  // Add score class to the rating
+  rating.classList.add(scoreClass);
+
+  // After adding the class, get its color
+  const ratingColor = window.getComputedStyle(rating).backgroundColor;
+
+  // Define the background gradient according to the score and color
+  const gradient = `background: conic-gradient(${ratingColor} ${ratingScore}%, transparent 0 100%)`;
+
+  // Set the gradient as the rating background
+  rating.setAttribute("style", gradient);
+
+  // Wrap the content in a tag to show it above the pseudo element that masks the bar
+  rating.innerHTML = `<span>${ratingScore} ${
+    ratingContent.indexOf("%") >= 0 ? "<small>%</small>" : ""
+  }</span>`;
+});
+
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission
+      
+      // Get the search input value
+      var searchValue = document.getElementById('searchInput').value;
+
+      // Redirect to the search URL with the query parameter
+      window.location.href = '/search?q=' + encodeURIComponent(searchValue);
+    });
+  });
+</script>
+</html>
