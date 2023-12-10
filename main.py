@@ -490,9 +490,67 @@ def get_messages():
         # show how long ago the message was sent (e.g. 5 minutes ago, 1 hour ago, 1 day ago)
         message['timestamp'] = format_time_ago(message['timestamp'])
 
+    trades = database.trades.aggregate([
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'initiator_id': '76561199380456538', 
+                            'user_id': '76561198164910282', 
+                            'completed': False
+                        }, {
+                            'initiator_id': '76561198164910282', 
+                            'user_id': '76561199380456538', 
+                            'completed': False
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    '_id': 0, 
+                    'initiator_rated': 0, 
+                    'user_rated': 0, 
+                    'user_id': 0, 
+                    'completed': 0
+                }
+            }
+        ])
+
     return jsonify({
         'messages': messages,
+        'trades': list(trades),
     })
+
+@app.route('/trade')
+def trade():
+    steam_id = request.cookies.get('steam_id')
+
+    if steam_id is None:
+        return redirect('/')
+
+    user_id = request.args.get('user_id')
+
+    if user_id is None:
+        return make_response('User not specified', 400)
+
+    tradeData = {
+        'initiator_id': steam_id,
+        'user_id': user_id,
+        'timestamp': datetime.datetime.now(),
+        'accepted': False,
+        'initiator_rated': False,
+        'user_rated': False,
+        'initiator_completed': False,
+        'user_completed': False,
+        'completed': False,
+    }
+
+    try:
+        database.trades.insert_one(tradeData)
+    except Exception as e:
+        return make_response('Failed to create trade', 500)
+
+    return make_response('OK', 200)
     
 
 if __name__ == '__main__':

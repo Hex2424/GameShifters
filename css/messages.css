@@ -268,7 +268,8 @@ body{
 }
 
 .chat .chat-message {
-    padding: 20px
+    padding: 20px;
+    padding-top: 5px;
 }
 
 .online,
@@ -352,4 +353,24 @@ body{
         height: calc(100vh - 350px);
         overflow-x: auto
     }
+}
+
+#contactName {
+    margin: 0;
+}
+
+.trades-box {
+    margin: 0;
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 632px;
+}
+
+.trades-box .m-b-0 {
+    padding: 0;
+}
+
+.m-b-0 .card {
+    padding: 5px;
+    margin-bottom: 5px;
 }

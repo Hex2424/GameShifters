@@ -5,6 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
 <link rel="stylesheet" href="css/messages.css" type="text/css" media="all" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <script src="https://kit.fontawesome.com/e1977a1fe2.js" crossorigin="anonymous"></script>
 <!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
 </head>
@@ -69,15 +70,23 @@
                                 <img id="contactAvatar" src="" alt="">
                             </a>
                             <div class="chat-about">
-                                <h3 id="contactName" style="color: #ccc" class="m-b-0"></h3>
+                                <h6 id="contactName" style="color: #ccc" class="m-b-0"></h6>
                                 <small id="lastSeen"></small>
                             </div>
+                        </div>
+                        <div class="col-lg-6 text-right">
+                            <button class="btn btn-primary trade" onclick="trade()">Trade</button>
                         </div>
                     </div>
                 </div>
                 <div class="chat-history">
                     <ul class="m-b-0">
                         <!-- MESSAGES -->
+                    </ul>
+                </div>
+                <div class="trades-box">
+                    <ul class="m-b-0">
+                        <!-- TRADES -->
                     </ul>
                 </div>
                 <div class="chat-message clearfix">
@@ -177,6 +186,91 @@ function fetchMessages(user_id) {
             var objDiv = document.getElementsByClassName("chat-history")[0];
             // add delay
             setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 5);
+
+            const contactName = document.getElementById('contactName').textContent;
+            
+            const trades = data.trades;
+            const tradeList = document.querySelector('.trades-box ul');
+
+            // Clear the trade list
+            tradeList.innerHTML = '';
+
+            trades.forEach(trade => {
+                if (trade.hidden) {
+                    return;
+                }
+                
+                const tradeElement = document.createElement('li');
+                tradeElement.classList.add('clearfix');
+
+                let tradeStatus = '';
+                if (!trade.accepted) {
+                    tradeStatus = 'Waiting for ' + contactName + ' to accept';
+                }
+                else if (trade.accepted && (!trade.initiator_completed || !trade.user_completed)) {
+                    tradeStatus = 'ACTIVE';
+                }
+                else if (trade.accepted && trade.initiator_completed && !trade.user_completed) {
+                    tradeStatus = 'Waiting for ' + contactName + ' to complete';
+                }
+                else if (trade.accepted && !trade.initiator_completed && trade.user_completed) {
+                    tradeStatus = 'Waiting for you to complete';
+                }
+                else if (trade.accepted && trade.initiator_completed && trade.user_completed) {
+                    tradeStatus = 'COMPLETED';
+                }
+
+                let styleClass = '';
+                if (tradeStatus === 'Waiting for ' + contactName + ' to accept') {
+                    styleClass = 'bg-warning';
+                }
+                else if (tradeStatus === 'ACTIVE') {
+                    styleClass = 'bg-success';
+                }
+                else if (tradeStatus === 'Waiting for ' + contactName + ' to complete') {
+                    styleClass = 'bg-warning';
+                }
+                else if (tradeStatus === 'Waiting for you to complete') {
+                    styleClass = 'bg-warning';
+                }
+                else if (tradeStatus === 'COMPLETED') {
+                    styleClass = 'bg-primary';
+                }
+
+                let buttons = '';
+                if (tradeStatus === 'Waiting for ' + contactName + ' to accept') {
+                    buttons = `
+                        <button onclick="acceptTrade(${trade.id})">ACCEPT</button>
+                        <button onclick="cancelTrade(${trade.id})">CANCEL</button>
+                    `;
+                }
+                else if (tradeStatus === 'ACTIVE') {
+                    buttons = `
+                        <button onclick="completeTrade(${trade.id})">COMPLETE</button>
+                    `;
+                }
+                else if (tradeStatus === 'Waiting for you to complete') {
+                    buttons = `
+                        <button onclick="cancelTrade(${trade.id})">COMPLETE</button>
+                    `;
+                };
+
+                if (trade.initiator_id === my_id) {
+                    tradeElement.innerHTML = `
+                    <div class="card ${styleClass}">
+                        <div class="parent">
+                            <div class="div1">${trade.timestamp}</div>
+                            <div class="div2">${tradeStatus}</div>
+                            <div class="div3">
+                                ${buttons}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+                
+                tradeList.appendChild(tradeElement);
+            });
         })
         .catch(error => {
             console.error('Error fetching messages:', error);
@@ -286,9 +380,38 @@ window.onload = function() {
     fetchContacts();
 };
 
+function trade() {
+    const userElement = document.querySelector('.list-unstyled.chat-list li.active');
+    const userId = userElement.getAttribute('data-user-id');
+    fetch('/trade?user_id=' + userId)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            fetchMessages(userId); // Fetch messages again
+            // scroll to bottom
+            var objDiv = document.getElementsByClassName("chat-history")[0];
+            const userElement = document.querySelector('.list-unstyled.chat-list li.active');
+            // Get all elements with the class 'chat-list'
+            const chatListItems = document.querySelectorAll('.list-unstyled.chat-list li');
+
+            // Find the index of the userElement within the chatListItems
+            const userIndex = Array.from(chatListItems).indexOf(userElement);
+
+            fetchContacts(userIndex);
+            setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 5);
+        })
+        .catch(error => {
+            console.error('Error initiating trade:', error);
+        });
+}
+
 function sendMessage() {
     const messageInput = document.getElementById('message-content');
     const content = messageInput.value;
+    if (!content) {
+        return;
+    }
 
     // You might need to get the 'user_id' dynamically based on your application logic
     const userElement = document.querySelector('.list-unstyled.chat-list li.active');
