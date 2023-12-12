@@ -8,6 +8,7 @@ from multiprocessing import Pool
 import pymongo
 from concurrent.futures import ThreadPoolExecutor
 import threading
+from bson import ObjectId
 
 
 app = Flask(__name__, template_folder='html', static_folder='css')
@@ -495,19 +496,20 @@ def get_messages():
                 '$match': {
                     '$or': [
                         {
-                            'initiator_id': '76561199380456538', 
-                            'user_id': '76561198164910282', 
-                            'completed': False
+                            'initiator_id': steam_id, 
+                            'user_id': user_id, 
+                            'completed': False,
+                            'cancelled': False
                         }, {
-                            'initiator_id': '76561198164910282', 
-                            'user_id': '76561199380456538', 
-                            'completed': False
+                            'initiator_id': user_id, 
+                            'user_id': steam_id, 
+                            'completed': False,
+                            'cancelled': False
                         }
                     ]
                 }
             }, {
                 '$project': {
-                    '_id': 0, 
                     'initiator_rated': 0, 
                     'user_rated': 0, 
                     'user_id': 0, 
@@ -516,10 +518,44 @@ def get_messages():
             }
         ])
 
+    trades = list(trades)
+    for trade in trades:
+        trade['_id'] = str(trade['_id'])
+
     return jsonify({
         'messages': messages,
-        'trades': list(trades),
+        'trades': trades,
     })
+
+@app.route('/change_trade_status', methods=['POST'])
+def change_trade_status():
+    try:
+        steam_id = request.cookies.get('steam_id')
+
+        if steam_id is None:
+            return Response('Not logged in', status=401)
+
+        trade_id = request.json['trade_id']
+        command = request.json['command']
+
+        trade = database.trades.find_one({'_id': ObjectId(trade_id)})
+
+        if command == 'accept':
+            trade['accepted'] = True
+        elif command == 'cancel':
+            trade['cancelled'] = True
+        elif command == 'complete':
+            if trade['initiator_id'] == steam_id:
+                trade['initiator_completed'] = True
+            else:
+                trade['user_completed'] = True
+            if trade['initiator_completed'] and trade['user_completed']:
+                trade['completed'] = True
+
+        database.trades.update_one({'_id': ObjectId(trade_id)}, {'$set': trade})
+        return 'OK'
+    except Exception as e:
+        return Response('Failed to change trade status', status=500)
 
 @app.route('/trade')
 def trade():
@@ -543,6 +579,7 @@ def trade():
         'initiator_completed': False,
         'user_completed': False,
         'completed': False,
+        'cancelled': False,
     }
 
     try:

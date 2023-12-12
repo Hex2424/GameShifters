@@ -203,25 +203,33 @@ function fetchMessages(user_id) {
                 const tradeElement = document.createElement('li');
                 tradeElement.classList.add('clearfix');
 
+                const userIsInitiator = trade.initiator_id === my_id;
+
+                console.log(trade);
                 let tradeStatus = '';
-                if (!trade.accepted) {
+                if (!trade.accepted && trade.initiator_id === my_id) {
                     tradeStatus = 'Waiting for ' + contactName + ' to accept';
                 }
-                else if (trade.accepted && (!trade.initiator_completed || !trade.user_completed)) {
+                else if (!trade.accepted && trade.initiator_id !== my_id) {
+                    tradeStatus = 'Waiting for you to accept';
+                }
+                else if (trade.accepted && !trade.initiator_completed && !trade.user_completed) {
                     tradeStatus = 'ACTIVE';
-                }
-                else if (trade.accepted && trade.initiator_completed && !trade.user_completed) {
-                    tradeStatus = 'Waiting for ' + contactName + ' to complete';
-                }
-                else if (trade.accepted && !trade.initiator_completed && trade.user_completed) {
-                    tradeStatus = 'Waiting for you to complete';
                 }
                 else if (trade.accepted && trade.initiator_completed && trade.user_completed) {
                     tradeStatus = 'COMPLETED';
                 }
+                else if (trade.accepted && (!userIsInitiator && !trade.user_completed) || (userIsInitiator && !trade.initiator_completed)) {
+                    tradeStatus = 'Waiting for you to complete';
+                }
+                else {
+                    tradeStatus = 'Waiting for ' + contactName + ' to complete';
+                }
+                console.log(userIsInitiator);
+                console.log(tradeStatus);
 
                 let styleClass = '';
-                if (tradeStatus === 'Waiting for ' + contactName + ' to accept') {
+                if (tradeStatus === 'Waiting for ' + contactName + ' to accept' || tradeStatus === 'Waiting for you to accept') {
                     styleClass = 'bg-warning';
                 }
                 else if (tradeStatus === 'ACTIVE') {
@@ -240,34 +248,37 @@ function fetchMessages(user_id) {
                 let buttons = '';
                 if (tradeStatus === 'Waiting for ' + contactName + ' to accept') {
                     buttons = `
-                        <button onclick="acceptTrade(${trade.id})">ACCEPT</button>
-                        <button onclick="cancelTrade(${trade.id})">CANCEL</button>
+                        <button onclick="changeStageStatus('${trade._id}', 'cancel')">CANCEL</button>
+                    `;
+                }
+                else if (tradeStatus === 'Waiting for you to accept') {
+                    buttons = `
+                        <button onclick="changeStageStatus('${trade._id}', 'accept')">ACCEPT</button>
+                        <button onclick="changeStageStatus('${trade._id}', 'cancel')">CANCEL</button>
                     `;
                 }
                 else if (tradeStatus === 'ACTIVE') {
                     buttons = `
-                        <button onclick="completeTrade(${trade.id})">COMPLETE</button>
+                        <button onclick="changeStageStatus('${trade._id}', 'complete')">COMPLETE</button>
                     `;
                 }
                 else if (tradeStatus === 'Waiting for you to complete') {
                     buttons = `
-                        <button onclick="cancelTrade(${trade.id})">COMPLETE</button>
+                        <button onclick="changeStageStatus('${trade._id}', 'complete')">COMPLETE</button>
                     `;
                 };
 
-                if (trade.initiator_id === my_id) {
-                    tradeElement.innerHTML = `
-                    <div class="card ${styleClass}">
-                        <div class="parent">
-                            <div class="div1">${trade.timestamp}</div>
-                            <div class="div2">${tradeStatus}</div>
-                            <div class="div3">
-                                ${buttons}
-                            </div>
+                tradeElement.innerHTML = `
+                <div class="card ${styleClass}">
+                    <div class="parent">
+                        <div class="div1">${trade.timestamp}</div>
+                        <div class="div2">${tradeStatus}</div>
+                        <div class="div3">
+                            ${buttons}
                         </div>
                     </div>
-                    `;
-                }
+                </div>
+                `;
                 
                 tradeList.appendChild(tradeElement);
             });
@@ -275,6 +286,41 @@ function fetchMessages(user_id) {
         .catch(error => {
             console.error('Error fetching messages:', error);
         });
+}
+
+function changeStageStatus(tradeId, command) {
+    userId = getSteamIdFromCookie();
+    // post request to complete trade
+    fetch('/change_trade_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            trade_id: tradeId,
+            command: command
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        fetchMessages(userId); // Fetch messages again
+        // scroll to bottom
+        var objDiv = document.getElementsByClassName("chat-history")[0];
+        const userElement = document.querySelector('.list-unstyled.chat-list li.active');
+        // Get all elements with the class 'chat-list'
+        const chatListItems = document.querySelectorAll('.list-unstyled.chat-list li');
+
+        // Find the index of the userElement within the chatListItems
+        const userIndex = Array.from(chatListItems).indexOf(userElement);
+
+        fetchContacts(userIndex);
+        setTimeout(function(){ objDiv.scrollTop = objDiv.scrollHeight; }, 5);
+    })
+    .catch(error => {
+        console.error('Error completing trade:', error);
+    });
 }
 
 function updateChatHeader(userId, userName, lastSeen, avatarUrl) {
