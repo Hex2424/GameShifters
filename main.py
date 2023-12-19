@@ -302,6 +302,34 @@ def user():
 
     average_rating = round(user_data['total_rating'] / user_data['rating_count'], 2) if user_data['rating_count'] > 0 else 0
 
+    user_trades = database.trades.aggregate([
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'initiator_id': user_id, 
+                            'user_id': steam_id,
+                            'completed': True,
+                            'user_rated': False
+                        }, {
+                            'user_id': steam_id, 
+                            'user_id': user_id,
+                            'completed': True,
+                            'initiator_rated': False
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    'initiator_rated': 0, 
+                    'user_rated': 0, 
+                    'user_id': 0, 
+                    'completed': 0
+                }
+            }
+        ])
+    allowed_to_rate = bool(list(user_trades))
+
     return render_template(
         'user.html',
         active_user_avatar=active_user['avatar'],
@@ -315,8 +343,78 @@ def user():
         average_rating=average_rating,
         stars_count=round(average_rating),
         comments=user_data['comments'],
-        user_id=user_id
+        user_id=user_id,
+        allowed_to_rate=allowed_to_rate,
     )
+
+@app.route('/rate_user', methods=['POST'])
+def rate_user():
+    try:
+        steam_id = request.cookies.get('steam_id')
+
+        if steam_id is None:
+            return Response('Not logged in', status=401)
+
+        active_user = database.users.find_one({'steam_id': steam_id})
+
+        user_id = request.json['user_id']
+        rating = int(request.json['rating'])
+        comment = request.json['comment']
+
+        user_trades = database.trades.aggregate([
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'initiator_id': user_id, 
+                            'user_id': steam_id,
+                            'completed': True,
+                            'user_rated': False
+                        }, {
+                            'user_id': steam_id, 
+                            'user_id': user_id,
+                            'completed': True,
+                            'initiator_rated': False
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    'initiator_rated': 0, 
+                    'user_rated': 0, 
+                    'user_id': 0, 
+                    'completed': 0
+                }
+            }
+        ])
+        user_trades = list(user_trades)
+        allowed_to_rate = bool(user_trades)
+
+        if not allowed_to_rate:
+            return Response('You have no permission to rate this user', status=403)
+
+        user = database.users.find_one({'steam_id': user_id})
+
+        user['total_rating'] += rating
+        user['rating_count'] += 1
+        user['star_ratings'][rating - 1] += 1
+        user['comments'].append({
+            'author': active_user['username'],
+            'content': comment,
+            'date': datetime.datetime.now(),
+        })
+
+        database.users.update_one({'steam_id': user_id}, {'$set': user})
+        trade = user_trades[0]
+        if trade['initiator_id'] == steam_id:
+            trade['initiator_rated'] = True
+        else:
+            trade['user_rated'] = True
+        database.trades.update_one({'_id': trade['_id']}, {'$set': trade})
+        return 'OK'
+    except Exception as e:
+        print(e)
+        return Response('Failed to rate user', status=500)
 
 @app.route('/game')
 def game():

@@ -7,6 +7,8 @@
 <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 <script type="text/javascript" src="js/jquery-func.js"></script>
 <script src="https://kit.fontawesome.com/e1977a1fe2.js" crossorigin="anonymous"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <!--[if IE 6]><link rel="stylesheet" href="css/ie6.css" type="text/css" media="all" /><![endif]-->
 </head>
 <body>
@@ -54,7 +56,7 @@
         </div>
         <a href="/messages?user_id={{ user_id }}">Write message</a>
 
-        
+        <span id="user_id" style="display: none;">{{ user_id }}</span>
         <div class="tabs">
           <div class="tab-2">
             <label for="tab2-1">Rating</label>
@@ -161,7 +163,41 @@
                 </div>
                 {% else %}
                 <div class="score">
-                <p>No ratings.</p>
+                <p style="color: #ccc;">No ratings.</p>
+                </div>
+                {% endif %}
+                {% if allowed_to_rate %}
+                <div class="rating-input">
+                  <div class="card">
+                    <div class="row">
+                      <div class="">
+                        <div class="comment-box ml-2">
+                          <div class="row">
+                            <h4 style="width: 50%;">Leave a rating</h4>
+                            <div id="starRating" class="rating rating-input-stars" style="width: 50%; height: 20px; margin-top: -38px;">
+                              <input type="radio" name="rating" value="5" id="5"><label for="5">☆</label>
+                              <input type="radio" name="rating" value="4" id="4"><label for="4">☆</label>
+                              <input type="radio" name="rating" value="3" id="3"><label for="3">☆</label>
+                              <input type="radio" name="rating" value="2" id="2"><label for="2">☆</label>
+                              <input type="radio" name="rating" value="1" id="1"><label for="1">☆</label>
+                            </div>
+                          </div>
+                          <div class="comment-area">
+                            <textarea class="form-control" placeholder="write a comment" rows="4"></textarea>
+                          </div>
+                          <div class="comment-btns mt-2">
+                            <div class="row">
+                              <div class="btn-group" role="group" aria-label="Button group">
+                                <button class="btn btn-success send btn-sm" id="saveButton">Save</button>
+                            </div>
+                            
+                          </div>
+                          
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 {% endif %}
         </div></div>
@@ -185,9 +221,10 @@
                 </div>
                 {% endfor %}
               </div>
-        </div>
+            </div>
           </div>
         </div>
+
 
           
 
@@ -256,5 +293,58 @@ ratings.forEach((rating) => {
       window.location.href = '/search?q=' + encodeURIComponent(searchValue);
     });
   });
+
+
+
+  $(document).ready(function() {
+    // Handle the click event on the "Save" button
+    $("#saveButton").on("click", function() {
+        // Check if a star rating is selected
+        if ($("#starRating input[name='rating']:checked").length === 0) {
+            alert("Please select a star rating before saving.");
+            // You can customize the alert or use other ways to notify the user.
+        } else {
+            // Continue with the save operation or perform other actions
+            // post the data to the server
+            const rating = $("#starRating input[name='rating']:checked").val();
+            const comment = $(".comment-area textarea").val();
+            const user_id = $("#user_id").text();
+            const data = {
+                rating: rating,
+                comment: comment,
+                user_id: user_id
+            };
+
+            fetch("/rate_user", {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => {
+                if (response.ok) {
+                  clearForm();
+                  location.reload(true);
+                }
+            });
+
+        }
+    });
+});
+
+function clearForm() {
+    // Clear the rating selection
+    $("#starRating input[name='rating']").prop("checked", false);
+
+    // Clear the comment textarea
+    $(".comment-area textarea").val('');
+}
+
+$(document).ready(function() {
+    // Reset the form elements when the page is refreshed
+    $(window).on('beforeunload', function() {
+      clearForm();
+    });
+});
 </script>
 </html>
