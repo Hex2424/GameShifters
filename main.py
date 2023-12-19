@@ -172,6 +172,9 @@ def update_user_data(steam_id):
     with ThreadPoolExecutor() as executor:
         # Use executor.map to parallelize the get_app_data calls
         games = list(executor.map(get_app_data, ids))
+
+    # remove None values
+    games = [game for game in games if game]
     
     if user_data is None:
         database.users.insert_one({

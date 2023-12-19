@@ -205,7 +205,6 @@ function fetchMessages(user_id) {
 
                 const userIsInitiator = trade.initiator_id === my_id;
 
-                console.log(trade);
                 let tradeStatus = '';
                 if (!trade.accepted && trade.initiator_id === my_id) {
                     tradeStatus = 'Waiting for ' + contactName + ' to accept';
@@ -225,8 +224,6 @@ function fetchMessages(user_id) {
                 else {
                     tradeStatus = 'Waiting for ' + contactName + ' to complete';
                 }
-                console.log(userIsInitiator);
-                console.log(tradeStatus);
 
                 let styleClass = '';
                 if (tradeStatus === 'Waiting for ' + contactName + ' to accept' || tradeStatus === 'Waiting for you to accept') {
