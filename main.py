@@ -290,10 +290,13 @@ def my_account():
 
 @app.route('/user')
 def user():
+    steam_id = request.cookies.get('steam_id')
     user_id = request.args.get('id')
 
     if user_id is None:
         return 'User not found'
+    
+    active_user = database.users.find_one({'steam_id': steam_id})
 
     user_data = database.users.find_one({'steam_id': user_id})
 
@@ -301,6 +304,7 @@ def user():
 
     return render_template(
         'user.html',
+        active_user_avatar=active_user['avatar'],
         username=user_data['username'],
         avatar=user_data['avatar'],
         steam_level=user_data['steam_level'],

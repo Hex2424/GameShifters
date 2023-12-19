@@ -245,23 +245,23 @@ function fetchMessages(user_id) {
                 let buttons = '';
                 if (tradeStatus === 'Waiting for ' + contactName + ' to accept') {
                     buttons = `
-                        <button onclick="changeStageStatus('${trade._id}', 'cancel')">CANCEL</button>
+                        <button class="btn btn-danger" onclick="changeStageStatus('${trade._id}', 'cancel')">CANCEL</button>
                     `;
                 }
                 else if (tradeStatus === 'Waiting for you to accept') {
                     buttons = `
-                        <button onclick="changeStageStatus('${trade._id}', 'accept')">ACCEPT</button>
-                        <button onclick="changeStageStatus('${trade._id}', 'cancel')">CANCEL</button>
+                        <button class="btn btn-success" onclick="changeStageStatus('${trade._id}', 'accept')">ACCEPT</button>
+                        <button class="btn btn-danger" onclick="changeStageStatus('${trade._id}', 'cancel')">CANCEL</button>
                     `;
                 }
                 else if (tradeStatus === 'ACTIVE') {
                     buttons = `
-                        <button onclick="changeStageStatus('${trade._id}', 'complete')">COMPLETE</button>
+                        <button class="btn btn-primary" onclick="changeStageStatus('${trade._id}', 'complete')">COMPLETE</button>
                     `;
                 }
                 else if (tradeStatus === 'Waiting for you to complete') {
                     buttons = `
-                        <button onclick="changeStageStatus('${trade._id}', 'complete')">COMPLETE</button>
+                        <button class="btn btn-primary" onclick="changeStageStatus('${trade._id}', 'complete')">COMPLETE</button>
                     `;
                 };
 
